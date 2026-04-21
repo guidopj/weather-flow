@@ -4,9 +4,9 @@ import { MongooseModule } from "@nestjs/mongoose"
 import { MeasurementRepositoryMongo } from './infrastructure/measurement.repository.mongo';
 import { MeasurementSchema } from './infrastructure/measurement.schema';
 
-import { CreateMeasurementService } from './application/register-measurement.service';
-
 import { MeasurementRepository } from './domain/measurement.repository';
+import { MeasurementService } from './application/measurement.service';
+import { MeasurementController } from './measurement.controller';
 
 @Module({
   imports: [
@@ -14,8 +14,9 @@ import { MeasurementRepository } from './domain/measurement.repository';
       { name: "Measurement", schema: MeasurementSchema },
     ]),
   ],
+  controllers: [MeasurementController],
   providers: [
-    CreateMeasurementService,
+    MeasurementService,
     {
       provide: MeasurementRepository,
       useClass: MeasurementRepositoryMongo,

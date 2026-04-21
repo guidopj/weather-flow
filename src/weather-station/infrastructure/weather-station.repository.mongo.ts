@@ -22,6 +22,18 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     private readonly model: Model<WeatherStationDocument>,
   ) {}
 
+  async findByName(name: string): Promise<WeatherStation | null> {
+    const normalizedName = name.trim().toLowerCase();
+
+    const doc = await this.model.findOne({
+      name: normalizedName,
+    });
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
+  }
+
   private toPersistence(weatherStation: WeatherStation) {
     return {
       name: weatherStation.name,
@@ -59,16 +71,16 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
   }
 
   async update(weatherStation: WeatherStation): Promise<WeatherStation | null> {
-  const doc = await this.model.findByIdAndUpdate(
-    weatherStation.id,
-    this.toPersistence(weatherStation),
-    { new: true }
-  );
+    const doc = await this.model.findByIdAndUpdate(
+      weatherStation.id,
+      this.toPersistence(weatherStation),
+      { new: true },
+    );
 
-  if (!doc) return null;
+    if (!doc) return null;
 
-  return this.toDomain(doc);
-}
+    return this.toDomain(doc);
+  }
 
   async delete(id: string): Promise<WeatherStation | null> {
     return this.model.findByIdAndDelete(id);
