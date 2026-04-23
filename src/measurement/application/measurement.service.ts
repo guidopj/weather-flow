@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MeasurementRepository } from '../domain/measurement.repository';
-import { AlarmType } from 'src/types/measurement.types';
 import { Measurement } from '../domain/measurement';
-import { WeatherStationRepository } from 'src/weather-station/domain/weather-station.repository';
+import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
+import { WeatherStationRepository } from '../../weather-station/domain/weather-station.repository';
+import { UpdateMeasurementDto } from '../update-measurement.dto';
 
 @Injectable()
 export class MeasurementService {
@@ -11,35 +12,68 @@ export class MeasurementService {
     private readonly weatherStationRepo: WeatherStationRepository,
   ) {}
 
-  async findByStationName(name: string): Promise<Measurement[]> {
-    const station = await this.weatherStationRepo.findByName(name);
-
-    if (!station) return [];
-
-    return this.measurementRepo.findByStationId(station.id);
-  }
-
   async create(input: {
-    weatherStationId: string;
-    timestamp: Date;
+    weatherStationId: string;    
     temperature: number;
     humidity: number;
     atmosphericPressure: number;
-    alarmType: AlarmType;
-  }) {
-    // 1. crear entidad de dominio
-    const measurement = new Measurement(
+  }): Promise<Measurement> {
+    const station = await this.weatherStationRepo.findById(
       input.weatherStationId,
-      input.timestamp,
-      input.temperature,
-      input.humidity,
-      input.atmosphericPressure,
-      input.alarmType,
     );
 
-    // 2. persistir usando puerto
-    await this.measurementRepo.save(measurement);
+    if (!station) {
+      throw new Error('Weather station not found');
+    }
+
+    const measurement = Measurement.create(input);
+
+    await this.measurementRepo.create(measurement);
 
     return measurement;
+  }
+
+  async update(measurementId: string, input: UpdateMeasurementDto) {
+    const measurement: Measurement | null =
+      await this.measurementRepo.findById(measurementId);
+    if (!measurement) throw new Error('Measurement not found');
+
+    if (input.atmosphericPressure)
+      measurement.atmosphericPressure = input.atmosphericPressure;
+    if (input.humidity) measurement.humidity = input.humidity;
+    if (input.temperature) measurement.temperature = input.temperature;
+
+    await this.measurementRepo.update(measurementId, measurement);
+
+    return measurement;
+  }
+
+  async delete(id: string) {
+    await this.measurementRepo.delete(id)
+  }
+
+  async findByStationName(weatherStationName: string): Promise<Measurement[]> {
+    const weatheStation =
+      await this.weatherStationRepo.findByName(weatherStationName);
+
+    if (!weatheStation) return [];
+
+    return this.measurementRepo.findByStationId(weatheStation.id);
+  }
+
+  async filterByTemperatureRange(
+    min?: number,
+    max?: number,
+    isActive?: boolean,
+  ): Promise<Measurement[]> {
+    const range =
+      min !== undefined && max !== undefined
+        ? new TemperatureRange(min, max)
+        : undefined;
+
+    return this.measurementRepo.getAllByCriteria({
+      temperatureRange: range,
+      isActive: isActive,
+    });
   }
 }

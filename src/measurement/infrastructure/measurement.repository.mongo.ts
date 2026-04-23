@@ -5,26 +5,40 @@ import { Injectable } from '@nestjs/common';
 
 import { MeasurementRepository } from '../domain/measurement.repository';
 import { Measurement } from '../domain/measurement';
-import { WeatherStationRepository } from 'src/weather-station/domain/weather-station.repository';
 import { AlarmType } from 'src/types/measurement.types';
+import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
 
-type MeasurementDocument = HydratedDocument<{
+type MeasurementType = {
   weatherStationId: string;
   timestamp: Date;
   temperature: number;
   humidity: number;
   atmosphericPressure: number;
-  alarmType: AlarmType;
-}>;
+  alarmType: AlarmType | null;
+};
+
+type MeasurementDocument = HydratedDocument<MeasurementType>;
+
+type Query = Record<string, any>;
 
 @Injectable()
 export class MeasurementRepositoryMongo implements MeasurementRepository {
   constructor(
     @InjectModel('Measurement')
-    private readonly model: Model<MeasurementDocument>,
-    private readonly weatherStationRepo: WeatherStationRepository,
+    private readonly model: Model<MeasurementType>,
   ) {}
-  
+
+  async create(measurement: Measurement): Promise<void> {
+    await this.model.create(this.toPersistence(measurement));
+  }
+
+  async update(id: string, measurement: Measurement): Promise<void> {
+    await this.model.updateOne({ _id: id }, this.toPersistence(measurement));
+  }
+
+  async delete(id: string): Promise<Measurement | null> {
+      return this.model.findByIdAndDelete(id);
+    }
 
   private toPersistence(measurement: Measurement) {
     return {
@@ -35,10 +49,6 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
       atmosphericPressure: measurement.atmosphericPressure,
       alarmType: measurement.alarmType,
     };
-  }
-
-  async save(measurement: Measurement): Promise<void> {
-    await this.model.create(this.toPersistence(measurement));
   }
 
   private toDomain(doc: MeasurementDocument): Measurement {
@@ -52,13 +62,51 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
     );
   }
 
-  
-
   async findByStationId(id: string): Promise<Measurement[]> {
-  const docs = await this.model.find({
-    weatherStationId: id,
-  });
+    const docs = await this.model.find({
+      weatherStationId: id,
+    });
 
-  return docs.map((doc) => this.toDomain(doc));
-}
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async findById(id: string): Promise<Measurement | null> {
+    const measurementDoc = await this.model.findById(id);
+
+    if (!measurementDoc) return null;
+
+    return this.toDomain(measurementDoc);
+  }
+
+  applyTemperatureRange = (range?: TemperatureRange) => (query: Query) =>
+    range
+      ? {
+          ...query,
+          temperature: {
+            $gte: range.min,
+            $lte: range.max,
+          },
+        }
+      : query;
+
+  applyActiveAlerts = (flag?: boolean) => (query: Query) =>
+    flag === undefined
+      ? query
+      : flag
+        ? { ...query, alarmType: { $ne: null } }
+        : { ...query, alarmType: null };
+
+  async getAllByCriteria(criteria: {
+    temperatureRange?: TemperatureRange;
+    isActive?: boolean;
+  }): Promise<Measurement[]> {
+    let query: Query = {};
+
+    query = this.applyTemperatureRange(criteria.temperatureRange)(query);
+    query = this.applyActiveAlerts(criteria.isActive)(query);
+
+    const docs = await this.model.find(query);
+
+    return docs.map((doc) => this.toDomain(doc));
+  }
 }

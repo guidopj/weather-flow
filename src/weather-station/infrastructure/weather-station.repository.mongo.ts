@@ -22,7 +22,9 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     private readonly model: Model<WeatherStationDocument>,
   ) {}
 
-  async findByName(name: string): Promise<WeatherStation | null> {
+  async findByName(
+    name: string,
+  ): Promise<{ id: string; station: WeatherStation } | null> {
     const normalizedName = name.trim().toLowerCase();
 
     const doc = await this.model.findOne({
@@ -31,7 +33,10 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
 
     if (!doc) return null;
 
-    return this.toDomain(doc);
+    return {
+      id: doc._id.toString(),
+      station: this.toDomain(doc),
+    };
   }
 
   private toPersistence(weatherStation: WeatherStation) {
@@ -53,7 +58,6 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     User → dominio */
   private toDomain(doc: WeatherStationDocument): WeatherStation {
     return new WeatherStation(
-      doc._id.toString(),
       doc.name,
       doc.location,
       doc.sensorModel,
@@ -70,9 +74,12 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     return this.toDomain(userDoc);
   }
 
-  async update(weatherStation: WeatherStation): Promise<WeatherStation | null> {
+  async update(
+    weatherStationId: string,
+    weatherStation: WeatherStation,
+  ): Promise<WeatherStation | null> {
     const doc = await this.model.findByIdAndUpdate(
-      weatherStation.id,
+      weatherStationId,
       this.toPersistence(weatherStation),
       { new: true },
     );

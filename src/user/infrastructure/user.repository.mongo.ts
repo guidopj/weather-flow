@@ -25,7 +25,7 @@ export class UserRepositoryMongo implements UserRepository {
       name: user.name,
       surname: user.surname,
       email: user.email,
-      subscriptionAlerts: user.subscriptionAlerts
+      subscriptionAlerts: user.subscriptionAlerts,
     };
   }
 
@@ -38,13 +38,7 @@ export class UserRepositoryMongo implements UserRepository {
   /* doc → infraestructura (Mongo)
     User → dominio */
   private toDomain(doc: UserDocument): User {
-    return new User(
-      doc._id.toString(),
-      doc.name,
-      doc.surname,
-      doc.email,
-      doc.subscriptionAlerts,
-    );
+    return new User(doc.name, doc.surname, doc.email, doc.subscriptionAlerts);
   }
 
   async findById(id: string): Promise<User | null> {
@@ -55,11 +49,11 @@ export class UserRepositoryMongo implements UserRepository {
     return this.toDomain(userDoc);
   }
 
-  async update(user: User): Promise<void> {
-    await this.model.updateOne({ _id: user.id }, this.toPersistence(user));
+  async update(id: string, user: User): Promise<void> {
+    await this.model.updateOne({ _id: id }, this.toPersistence(user));
   }
 
-  async delete(id: string): Promise<User | null>{
+  async delete(id: string): Promise<User | null> {
     return this.model.findByIdAndDelete(id);
   }
 }

@@ -8,10 +8,9 @@ import { Location } from 'src/measurement/domain/valueObjects/Location';
 
 @Injectable()
 export class WeatherStationService {
-  constructor(private readonly repo: WeatherStationRepository) {}
+  constructor(private readonly weatherStationRepo: WeatherStationRepository) {}
 
-  async createWeatherStation(weatherStation: CreateWeatherStationDto) {
-    // 1. crear entidad de dominio
+  async create(weatherStation: CreateWeatherStationDto) {
 
     const location = Location.create(
       weatherStation.location.latitude,
@@ -25,18 +24,17 @@ export class WeatherStationService {
       weatherStation.ownerId,
     );
 
-    // 2. persistir usando puerto
-    await this.repo.save(newUser);
+    await this.weatherStationRepo.save(newUser);
 
     return newUser;
   }
 
-  async updateWeatherStation(
-    id: string,
+  async update(
+    weatherStationId: string,
     newWeatherStation: UpdateWeatherStationDto,
   ) {
     const storedWeatherStation: WeatherStation | null =
-      await this.repo.findById(id);
+      await this.weatherStationRepo.findById(weatherStationId);
     if (!storedWeatherStation) throw new Error('Weather Station not found');
 
     // aplicar cambios (sin romper dominio)
@@ -51,8 +49,12 @@ export class WeatherStationService {
     if(newWeatherStation.sensorModel) storedWeatherStation.sensorModel = newWeatherStation.sensorModel;
     if(newWeatherStation.state) storedWeatherStation.state = newWeatherStation.state;
 
-    await this.repo.update(storedWeatherStation);
+    await this.weatherStationRepo.update(weatherStationId, storedWeatherStation);
 
     return storedWeatherStation;
+  }
+
+  async delete(id: string): Promise<WeatherStation | null> {
+    return await this.weatherStationRepo.delete(id)
   }
 }

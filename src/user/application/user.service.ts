@@ -10,24 +10,23 @@ import { UserRepository } from '../domain/user-repository';
 export class UserService {
   constructor(private readonly repo: UserRepository) {}
 
-  async createUser(input: CreateUserDto) {
-    // 1. crear entidad de dominio
+  async create(input: CreateUserDto) {
+    
     const newUser = new User(
-      '',
       input.name,
       input.surname,
       input.email,
       input.subscriptionAlerts,
     );
 
-    // 2. persistir usando puerto
+    
     await this.repo.save(newUser);
 
     return newUser;
   }
 
-  async updateUser(id: string, input: UpdateUserDto) {
-    const user: User | null = await this.repo.findById(id);
+  async update(userId: string, input: UpdateUserDto) {
+    const user: User | null = await this.repo.findById(userId);
     if (!user) throw new Error('User not found');
 
     // aplicar cambios (sin romper dominio)
@@ -37,12 +36,12 @@ export class UserService {
     if (input.subscriptionAlerts)
       user.subscriptionAlerts = input.subscriptionAlerts;
 
-    await this.repo.update(user);
+    await this.repo.update(userId, user);
 
     return user;
   }
 
-  async deleteUser(id: string) {
+  async delete(id: string) {
     await this.repo.delete(id)
   }
 
@@ -59,7 +58,7 @@ export class UserService {
     user.subscribe(weatherStationId);
 
 
-    await this.repo.update(user);
+    await this.repo.update(userId, user);
 
     return user;
   }
@@ -76,7 +75,7 @@ export class UserService {
 
     user.unsubscribe(weatherStationId);
 
-    await this.repo.update(user);
+    await this.repo.update(userId, user);
 
     return user;
   }

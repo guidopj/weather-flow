@@ -9,10 +9,11 @@ import { WeatherStationRepositoryMongo } from './infrastructure/weather-station.
 @Module({
   imports: [
         MongooseModule.forFeature([
-          { name: "Measurement", schema: WeatherStationSchema },
+          { name: "WeatherStation", schema: WeatherStationSchema },
         ]),
       ],
   controllers: [WeatherStationController],
+  exports: [WeatherStationRepository],
   providers: [
         WeatherStationService,
         {
