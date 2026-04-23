@@ -1,10 +1,12 @@
+import { NotFoundException } from "@nestjs/common";
+
 export class TemperatureRange {
   constructor(
     readonly min: number,
     readonly max: number
   ) {
     if (min > max) {
-      throw new Error("Invalid range: min > max");
+      throw new NotFoundException("Invalid range: min > max");
     }
   }
 

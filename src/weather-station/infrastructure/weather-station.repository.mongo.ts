@@ -22,54 +22,9 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     private readonly model: Model<WeatherStationDocument>,
   ) {}
 
-  async findByName(
-    name: string,
-  ): Promise<{ id: string; station: WeatherStation } | null> {
-    const normalizedName = name.trim().toLowerCase();
-
-    const doc = await this.model.findOne({
-      name: normalizedName,
-    });
-
-    if (!doc) return null;
-
-    return {
-      id: doc._id.toString(),
-      station: this.toDomain(doc),
-    };
-  }
-
-  private toPersistence(weatherStation: WeatherStation) {
-    return {
-      name: weatherStation.name,
-      location: weatherStation.location,
-      sensorModel: weatherStation.sensorModel,
-      state: weatherStation.state,
-      ownerId: weatherStation.ownerId,
-    };
-  }
-
-  async save(weatherStation: WeatherStation): Promise<WeatherStation> {
+  async create(weatherStation: WeatherStation): Promise<WeatherStation> {
     const doc = await this.model.create(this.toPersistence(weatherStation));
     return this.toDomain(doc);
-  }
-
-  private toDomain(doc: WeatherStationDocument): WeatherStation {
-    return new WeatherStation(
-      doc.name,
-      doc.location,
-      doc.sensorModel,
-      doc.state,
-      doc.ownerId,
-    );
-  }
-
-  async findById(id: string): Promise<WeatherStation | null> {
-    const userDoc = await this.model.findById(id);
-
-    if (!userDoc) return null;
-
-    return this.toDomain(userDoc);
   }
 
   async update(
@@ -88,6 +43,58 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
   }
 
   async delete(id: string): Promise<WeatherStation | null> {
-    return this.model.findByIdAndDelete(id);
+    const doc = await this.model.findByIdAndDelete(id);
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
+  }
+
+  async findByName(name: string) {
+  const normalizedName = this.normalizeName(name);
+  console.log("normalizedName", normalizedName)
+
+  const doc = await this.model.findOne({
+    name: normalizedName,
+  });
+
+  if (!doc) return null;
+
+  return {
+    id: doc._id.toString(),
+    station: this.toDomain(doc),
+  };
+}
+
+  private normalizeName(name: string): string {
+    return name.trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  private toPersistence(weatherStation: WeatherStation) {
+    return {
+      name: this.normalizeName(weatherStation.name),
+      location: weatherStation.location,
+      sensorModel: weatherStation.sensorModel,
+      state: weatherStation.state,
+      ownerId: weatherStation.ownerId,
+    };
+  }
+
+  private toDomain(doc: WeatherStationDocument): WeatherStation {
+    return new WeatherStation(
+      doc.name,
+      doc.location,
+      doc.sensorModel,
+      doc.state,
+      doc.ownerId,
+    );
+  }
+
+  async findById(id: string): Promise<WeatherStation | null> {
+    const userDoc = await this.model.findById(id);
+
+    if (!userDoc) return null;
+
+    return this.toDomain(userDoc);
   }
 }

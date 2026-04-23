@@ -19,12 +19,14 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true,
+        enableImplicitConversion: false,
       },
     }),
   );
 
   const document = SwaggerModule.createDocument(app, config);
+
+  app.enableCors();
 
   SwaggerModule.setup('api', app, document);
 

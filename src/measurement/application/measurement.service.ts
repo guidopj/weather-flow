@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MeasurementRepository } from '../domain/measurement.repository';
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
@@ -13,7 +13,7 @@ export class MeasurementService {
   ) {}
 
   async create(input: {
-    weatherStationId: string;    
+    weatherStationId: string;
     temperature: number;
     humidity: number;
     atmosphericPressure: number;
@@ -23,7 +23,7 @@ export class MeasurementService {
     );
 
     if (!station) {
-      throw new Error('Weather station not found');
+      throw new NotFoundException('Weather station not found');
     }
 
     const measurement = Measurement.create(input);
@@ -36,7 +36,7 @@ export class MeasurementService {
   async update(measurementId: string, input: UpdateMeasurementDto) {
     const measurement: Measurement | null =
       await this.measurementRepo.findById(measurementId);
-    if (!measurement) throw new Error('Measurement not found');
+    if (!measurement) throw new NotFoundException('Measurement not found');
 
     if (input.atmosphericPressure)
       measurement.atmosphericPressure = input.atmosphericPressure;
@@ -49,12 +49,15 @@ export class MeasurementService {
   }
 
   async delete(id: string) {
-    await this.measurementRepo.delete(id)
+    await this.measurementRepo.delete(id);
   }
 
   async findByStationName(weatherStationName: string): Promise<Measurement[]> {
+    console.log("weatherStationName", weatherStationName)
     const weatheStation =
       await this.weatherStationRepo.findByName(weatherStationName);
+
+      console.log("weatheStation", weatheStation)
 
     if (!weatheStation) return [];
 

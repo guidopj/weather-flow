@@ -5,8 +5,8 @@ import { Injectable } from '@nestjs/common';
 
 import { MeasurementRepository } from '../domain/measurement.repository';
 import { Measurement } from '../domain/measurement';
-import { AlarmType } from 'src/types/measurement.types';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
+import { AlertType } from '../domain/AlertTypes';
 
 type MeasurementType = {
   weatherStationId: string;
@@ -14,7 +14,7 @@ type MeasurementType = {
   temperature: number;
   humidity: number;
   atmosphericPressure: number;
-  alarmType: AlarmType | null;
+  alarmType: AlertType | null;
 };
 
 type MeasurementDocument = HydratedDocument<MeasurementType>;
@@ -37,8 +37,8 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
   }
 
   async delete(id: string): Promise<Measurement | null> {
-      return this.model.findByIdAndDelete(id);
-    }
+    return this.model.findByIdAndDelete(id);
+  }
 
   private toPersistence(measurement: Measurement) {
     return {
@@ -47,7 +47,7 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
       temperature: measurement.temperature,
       humidity: measurement.humidity,
       atmosphericPressure: measurement.atmosphericPressure,
-      alarmType: measurement.alarmType,
+      alarmType: measurement.alarmType ?? AlertType.NONE,
     };
   }
 
@@ -89,12 +89,14 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
         }
       : query;
 
-  applyActiveAlerts = (flag?: boolean) => (query: Query) =>
-    flag === undefined
-      ? query
-      : flag
-        ? { ...query, alarmType: { $ne: null } }
-        : { ...query, alarmType: null };
+  applyActiveAlerts = (isActive?: boolean) => (query: Query) => {
+    if (isActive === undefined) return query;
+
+    return {
+      ...query,
+      alarmType: isActive ? AlertType.NONE : { $ne: AlertType.NONE },
+    };
+  };
 
   async getAllByCriteria(criteria: {
     temperatureRange?: TemperatureRange;

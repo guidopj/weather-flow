@@ -1,3 +1,5 @@
+import { NotFoundException } from "@nestjs/common";
+
 export class User {
   constructor( 
     public name: string,
@@ -11,7 +13,7 @@ export class User {
     const alreadySubscribed = this.subscriptionAlerts.includes(weatherStationId);
 
     if (alreadySubscribed) {
-      throw new Error('Weather station already subscribed');
+      throw new NotFoundException('Weather station already subscribed');
     }
 
     this.subscriptionAlerts.push(weatherStationId);
@@ -21,7 +23,7 @@ export class User {
     const isSubscribed = this.subscriptionAlerts.includes(weatherStationId);
 
     if (!isSubscribed) {
-      throw new Error('Weather station is not subscribed');
+      throw new NotFoundException('Weather station is not subscribed');
     }
 
     this.subscriptionAlerts =

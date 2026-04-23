@@ -1,13 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WeatherStationService } from './weather-station.service';
 import { WeatherStationRepository } from '../domain/weather-station.repository';
+import { UserRepository } from '../../user/domain/user-repository';
 
 describe('WeatherStationService', () => {
   let service: WeatherStationService;
 
-  const mockRepo = {
-    save: jest.fn(),
+  const weatherStationMockRepo = {
+    create: jest.fn(),
     findById: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  };
+
+  const userMockRepo = {
+    findById: jest.fn(),
+    create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
   };
@@ -20,7 +28,11 @@ describe('WeatherStationService', () => {
         WeatherStationService,
         {
           provide: WeatherStationRepository,
-          useValue: mockRepo,
+          useValue: weatherStationMockRepo,
+        },
+        {
+          provide: UserRepository,
+          useValue: userMockRepo,
         },
       ],
     }).compile();
@@ -30,25 +42,51 @@ describe('WeatherStationService', () => {
 
   // ---------------- CREATE ----------------
   describe('create', () => {
-    it('should create and save a weather station', async () => {
-      const dto = {
-        name: 'Station A',
-        location: { latitude: 10, longitude: 20 },
-        sensorModel: 'X1',
-        state: 'ACTIVE',
-        ownerId: 'owner1',
-      };
+    const dto = {
+      name: 'Station A',
+      location: { latitude: 10, longitude: 20 },
+      sensorModel: 'X1',
+      state: 'ACTIVE',
+      ownerId: 'owner1',
+    };
 
-      jest.mock('../../measurement/domain/valueObjects/Location', () => ({
-        Location: {
-          create: jest.fn(() => ({ lat: 10, lng: 20 })),
-        },
-      }));
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should create and save a weather station', async () => {
+      userMockRepo.findById.mockResolvedValue({
+        id: 'owner1',
+        name: 'Guido',
+      });
 
       const result = await service.create(dto as any);
 
-      expect(mockRepo.save).toHaveBeenCalled();
+      expect(userMockRepo.findById).toHaveBeenCalledWith('owner1');
+      expect(weatherStationMockRepo.create).toHaveBeenCalled();
       expect(result.name).toBe('Station A');
+    });
+
+    it('should throw if user does not exist', async () => {
+      
+      userMockRepo.findById.mockResolvedValue(null);
+
+      await expect(service.create(dto as any)).rejects.toThrow(
+        'User not found',
+      );
+
+      expect(userMockRepo.findById).toHaveBeenCalledWith('owner1');
+      expect(weatherStationMockRepo.create).not.toHaveBeenCalled();
+    });
+
+    
+    it('should fail if ownerId is null', async () => {
+      const badDto = {
+        ...dto,
+        ownerId: null,
+      };
+
+      await expect(service.create(badDto as any)).rejects.toThrow();
     });
   });
 
@@ -62,8 +100,8 @@ describe('WeatherStationService', () => {
         state: 'ACTIVE',
       };
 
-      mockRepo.findById.mockResolvedValue(existing);
-      mockRepo.update.mockResolvedValue(undefined);
+      weatherStationMockRepo.findById.mockResolvedValue(existing);
+      weatherStationMockRepo.update.mockResolvedValue(undefined);
 
       const result = await service.update('ws1', {
         name: 'New Name',
@@ -71,14 +109,17 @@ describe('WeatherStationService', () => {
         state: 'INACTIVE',
       } as any);
 
-      expect(mockRepo.findById).toHaveBeenCalledWith('ws1');
-      expect(mockRepo.update).toHaveBeenCalledWith('ws1', existing);
+      expect(weatherStationMockRepo.findById).toHaveBeenCalledWith('ws1');
+      expect(weatherStationMockRepo.update).toHaveBeenCalledWith(
+        'ws1',
+        existing,
+      );
       expect(result.name).toBe('New Name');
       expect(result.sensorModel).toBe('B');
     });
 
     it('should throw if station not found', async () => {
-      mockRepo.findById.mockResolvedValue(null);
+      weatherStationMockRepo.findById.mockResolvedValue(null);
 
       await expect(service.update('ws1', { name: 'X' } as any)).rejects.toThrow(
         'Weather Station not found',
@@ -92,8 +133,8 @@ describe('WeatherStationService', () => {
         state: 'ACTIVE',
       };
 
-      mockRepo.findById.mockResolvedValue(existing);
-      mockRepo.update.mockResolvedValue(undefined);
+      weatherStationMockRepo.findById.mockResolvedValue(existing);
+      weatherStationMockRepo.update.mockResolvedValue(undefined);
 
       await service.update('ws1', {
         name: 'Updated',
@@ -107,11 +148,11 @@ describe('WeatherStationService', () => {
   // ---------------- DELETE ----------------
   describe('delete', () => {
     it('should call repository delete', async () => {
-      mockRepo.delete.mockResolvedValue({ id: 'ws1' });
+      weatherStationMockRepo.delete.mockResolvedValue({ id: 'ws1' });
 
       const result = await service.delete('ws1');
 
-      expect(mockRepo.delete).toHaveBeenCalledWith('ws1');
+      expect(weatherStationMockRepo.delete).toHaveBeenCalledWith('ws1');
       expect(result).toEqual({ id: 'ws1' });
     });
   });
