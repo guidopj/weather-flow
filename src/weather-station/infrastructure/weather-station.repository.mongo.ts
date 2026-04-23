@@ -54,8 +54,6 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     return this.toDomain(doc);
   }
 
-  /* doc → infraestructura (Mongo)
-    User → dominio */
   private toDomain(doc: WeatherStationDocument): WeatherStation {
     return new WeatherStation(
       doc.name,

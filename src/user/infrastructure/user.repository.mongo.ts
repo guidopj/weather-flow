@@ -33,10 +33,6 @@ export class UserRepositoryMongo implements UserRepository {
     await this.model.create(this.toPersistence(user));
   }
 
-  // doc es un documento de Mongoose
-
-  /* doc → infraestructura (Mongo)
-    User → dominio */
   private toDomain(doc: UserDocument): User {
     return new User(doc.name, doc.surname, doc.email, doc.subscriptionAlerts);
   }

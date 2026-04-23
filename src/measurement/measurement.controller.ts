@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { MeasurementService } from './application/measurement.service';
-import { FilterQueryDto } from 'src/dto/filterQuery.dto';
+import { FilterQueryDto } from '../dto/filterQuery.dto';
 import { CreateMeasurementDto } from './createMeasurement.dto';
 import { UpdateMeasurementDto } from './update-measurement.dto';
 

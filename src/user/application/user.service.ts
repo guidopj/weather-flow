@@ -29,7 +29,6 @@ export class UserService {
     const user: User | null = await this.repo.findById(userId);
     if (!user) throw new Error('User not found');
 
-    // aplicar cambios (sin romper dominio)
     if (input.name) user.name = input.name;
     if (input.surname) user.surname = input.surname;
     if (input.email) user.email = input.email;

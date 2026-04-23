@@ -4,7 +4,7 @@ import { WeatherStationRepository } from '../domain/weather-station.repository';
 import { CreateWeatherStationDto } from '../create-weather-station.dto';
 import { UpdateWeatherStationDto } from '../update-weather-station.dto';
 import { WeatherStation } from '../domain/weatherStation';
-import { Location } from 'src/measurement/domain/valueObjects/Location';
+import { Location } from "../../measurement/domain/valueObjects/Location"
 
 @Injectable()
 export class WeatherStationService {

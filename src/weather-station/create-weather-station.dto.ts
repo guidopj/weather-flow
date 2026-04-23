@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
-import { LocationDto } from 'src/dto/location.dto';
+import { LocationDto } from '../dto/location.dto';
 
 export class CreateWeatherStationDto {
   @IsString()
