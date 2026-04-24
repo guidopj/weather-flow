@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { User } from '../domain/user';
 import { CreateUserDto } from '../create-user.dto';
@@ -12,7 +16,7 @@ export class UserService {
   async create(input: CreateUserDto) {
     const newUser = new User(input.name, input.surname, input.email, []);
 
-    await this.userRepository.save(newUser);
+    await this.userRepository.create(newUser);
 
     return newUser;
   }
@@ -40,13 +44,11 @@ export class UserService {
     const user: User | null = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    const isSubscribed = user.subscriptionAlerts.includes(weatherStationId);
-
-    if (isSubscribed) {
-      throw new NotFoundException('Weather station is already subscribed');
-    }
+    
 
     user.subscribe(weatherStationId);
+
+    
 
     await this.userRepository.update(userId, user);
 

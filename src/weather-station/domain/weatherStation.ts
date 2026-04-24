@@ -7,5 +7,6 @@ export class WeatherStation {
         public sensorModel: string,
         public state: boolean,
         public ownerId: string,
+        public id?: string,
     ){}
 }

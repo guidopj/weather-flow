@@ -1,15 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+
+import { WeatherStationRepository } from '../../weather-station/domain/weather-station.repository';
 import { MeasurementRepository } from '../domain/measurement.repository';
+import { UserRepository } from '../../user/domain/user-repository';
+
+import { NotificationService } from '../../notifications/application/notificationService';
+
+import { UpdateMeasurementDto } from '../update-measurement.dto';
+
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
-import { WeatherStationRepository } from '../../weather-station/domain/weather-station.repository';
-import { UpdateMeasurementDto } from '../update-measurement.dto';
+
 
 @Injectable()
 export class MeasurementService {
   constructor(
     private readonly measurementRepo: MeasurementRepository,
     private readonly weatherStationRepo: WeatherStationRepository,
+    private readonly userRepo: UserRepository,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(input: {
@@ -23,12 +32,25 @@ export class MeasurementService {
     );
 
     if (!station) {
-      throw new NotFoundException('Weather station not found');
+      throw new NotFoundException('Weather Station not found');
     }
 
     const measurement = Measurement.create(input);
 
     await this.measurementRepo.create(measurement);
+
+    if (measurement.isAnomaly) {
+      const users = await this.userRepo.findBySubscribedStation(
+        input.weatherStationId,
+      );
+
+      for (const user of users) {
+        this.notificationService.notify(
+          user.email,
+          `Alert: ${measurement.alarmType} detected`,
+        );
+      }
+    }
 
     return measurement;
   }
@@ -53,11 +75,8 @@ export class MeasurementService {
   }
 
   async findByStationName(weatherStationName: string): Promise<Measurement[]> {
-    console.log("weatherStationName", weatherStationName)
     const weatheStation =
       await this.weatherStationRepo.findByName(weatherStationName);
-
-      console.log("weatheStation", weatheStation)
 
     if (!weatheStation) return [];
 

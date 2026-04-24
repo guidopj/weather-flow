@@ -1,16 +1,18 @@
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException } from '@nestjs/common';
 
 export class User {
-  constructor( 
+  constructor(
     public name: string,
     public surname: string,
     public email: string,
     //IDs de estaciones de las cuales desea recibir alertas
     public subscriptionAlerts: Array<string> = [],
+    public id?: string,
   ) {}
 
   subscribe(weatherStationId: string) {
-    const alreadySubscribed = this.subscriptionAlerts.includes(weatherStationId);
+    const alreadySubscribed =
+      this.subscriptionAlerts.includes(weatherStationId);
 
     if (alreadySubscribed) {
       throw new NotFoundException('Weather station already subscribed');
@@ -26,7 +28,8 @@ export class User {
       throw new NotFoundException('Weather station is not subscribed');
     }
 
-    this.subscriptionAlerts =
-      this.subscriptionAlerts.filter(id => id !== weatherStationId);
+    this.subscriptionAlerts = this.subscriptionAlerts.filter(
+      (id) => id !== weatherStationId,
+    );
   }
 }

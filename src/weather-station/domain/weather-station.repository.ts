@@ -1,8 +1,9 @@
+import { PersistedWeatherStation } from './weather-station.types';
 import { WeatherStation } from './weatherStation';
 
 //PORT
 export abstract class WeatherStationRepository {
-  abstract create(weatherStation: WeatherStation): Promise<WeatherStation>;
+  abstract create(weatherStation: WeatherStation): Promise<PersistedWeatherStation>;
   abstract update(
     weatherStationId: string,
     weatherStation: WeatherStation,

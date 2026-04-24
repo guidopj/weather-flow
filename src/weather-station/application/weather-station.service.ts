@@ -8,7 +8,6 @@ import { UpdateWeatherStationDto } from '../update-weather-station.dto';
 import { WeatherStation } from '../domain/weatherStation';
 import { Location } from '../../measurement/domain/valueObjects/Location';
 
-
 @Injectable()
 export class WeatherStationService {
   constructor(
@@ -17,17 +16,17 @@ export class WeatherStationService {
   ) {}
 
   async create(weatherStation: CreateWeatherStationDto) {
-    const user = await this.userRepo.findById(weatherStation.ownerId);
+    const owner = await this.userRepo.findById(weatherStation.ownerId);
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!owner) {
+      throw new NotFoundException('Owner not found');
     }
-
+    
     const location = Location.create(
       weatherStation.location.latitude,
       weatherStation.location.longitude,
     );
-    const newUser = new WeatherStation(
+    const newWeatherStation = new WeatherStation(
       weatherStation.name,
       location,
       weatherStation.sensorModel,
@@ -35,9 +34,14 @@ export class WeatherStationService {
       weatherStation.ownerId,
     );
 
-    await this.weatherStationRepo.create(newUser);
+    const createdStation =
+      await this.weatherStationRepo.create(newWeatherStation);
 
-    return newUser;
+    owner.subscribe(createdStation.id);
+
+    await this.userRepo.update(owner.id, owner);
+
+    return createdStation;
   }
 
   async update(
@@ -46,7 +50,8 @@ export class WeatherStationService {
   ) {
     const storedWeatherStation: WeatherStation | null =
       await this.weatherStationRepo.findById(weatherStationId);
-    if (!storedWeatherStation) throw new NotFoundException('Weather Station not found');
+    if (!storedWeatherStation)
+      throw new NotFoundException('Weather Station not found');
 
     // aplicar cambios (sin romper dominio)
     if (newWeatherStation.name)

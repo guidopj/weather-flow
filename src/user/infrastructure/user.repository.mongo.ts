@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 
 import { UserRepository } from '../../user/domain/user-repository';
 import { User } from '../domain/user';
+import { PersistedUser } from '../domain/user.types';
 
 type UserDocument = HydratedDocument<{
   name: string;
@@ -29,15 +30,29 @@ export class UserRepositoryMongo implements UserRepository {
     };
   }
 
-  async save(user: User): Promise<void> {
-    await this.model.create(this.toPersistence(user));
+  private toDomain(doc: UserDocument): PersistedUser {
+    return new User(
+      doc.name,
+      doc.surname,
+      doc.email,
+      doc.subscriptionAlerts,
+      doc._id.toString(),
+    ) as PersistedUser;
   }
 
-  private toDomain(doc: UserDocument): User {
-    return new User(doc.name, doc.surname, doc.email, doc.subscriptionAlerts);
+  async create(user: User): Promise<PersistedUser> {
+    const doc = await this.model.create(this.toPersistence(user));
+
+    const entity = this.toDomain(doc);
+
+    if (!entity.id) {
+      throw new Error('Invariant: id should exist after persistence');
+    }
+
+    return entity as PersistedUser;
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<PersistedUser | null> {
     const userDoc = await this.model.findById(id);
 
     if (!userDoc) return null;
@@ -45,11 +60,27 @@ export class UserRepositoryMongo implements UserRepository {
     return this.toDomain(userDoc);
   }
 
-  async update(id: string, user: User): Promise<void> {
-    await this.model.updateOne({ _id: id }, this.toPersistence(user));
+  async update(id: string, user: User): Promise<User | null> {
+    const doc = await this.model.findByIdAndUpdate(
+      id,
+      this.toPersistence(user),
+      { new: true },
+    );
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
   }
 
   async delete(id: string): Promise<User | null> {
     return this.model.findByIdAndDelete(id);
+  }
+
+  async findBySubscribedStation(stationId: string): Promise<User[]> {
+    const docs = await this.model.find({
+      subscriptionAlerts: stationId,
+    });
+
+    return docs.map((doc) => this.toDomain(doc));
   }
 }

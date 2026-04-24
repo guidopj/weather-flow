@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { WeatherStationRepository } from '../domain/weather-station.repository';
 import { WeatherStation } from '../domain/weatherStation';
 import { Location } from 'src/measurement/domain/valueObjects/Location';
+import { PersistedWeatherStation } from '../domain/weather-station.types';
 
 type WeatherStationDocument = HydratedDocument<{
   name: string;
@@ -22,9 +23,18 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     private readonly model: Model<WeatherStationDocument>,
   ) {}
 
-  async create(weatherStation: WeatherStation): Promise<WeatherStation> {
+  async create(
+    weatherStation: WeatherStation,
+  ): Promise<PersistedWeatherStation> {
     const doc = await this.model.create(this.toPersistence(weatherStation));
-    return this.toDomain(doc);
+
+    const station = this.toDomain(doc);
+
+    if (!station.id) {
+      throw new Error('ID should exist after persistence');
+    }
+
+    return station as PersistedWeatherStation;
   }
 
   async update(
@@ -51,20 +61,19 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
   }
 
   async findByName(name: string) {
-  const normalizedName = this.normalizeName(name);
-  console.log("normalizedName", normalizedName)
+    const normalizedName = this.normalizeName(name);
 
-  const doc = await this.model.findOne({
-    name: normalizedName,
-  });
+    const doc = await this.model.findOne({
+      name: normalizedName,
+    });
 
-  if (!doc) return null;
+    if (!doc) return null;
 
-  return {
-    id: doc._id.toString(),
-    station: this.toDomain(doc),
-  };
-}
+    return {
+      id: doc._id.toString(),
+      station: this.toDomain(doc),
+    };
+  }
 
   private normalizeName(name: string): string {
     return name.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -87,6 +96,7 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
       doc.sensorModel,
       doc.state,
       doc.ownerId,
+      doc._id.toString(),
     );
   }
 

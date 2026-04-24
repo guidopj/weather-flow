@@ -9,7 +9,7 @@ export const MeasurementSchema = new Schema({
 
   alarmType: {
     type: String,
-    enum: ['EXTREME_HEAT', 'FROST', 'LOW_PRESSURE', 'HIGH_HUMIDITY'],
+    enum: ['NONE', 'EXTREME_HEAT', 'FROST', 'LOW_PRESSURE', 'HIGH_HUMIDITY'],
     required: false,
     default: null,
   },

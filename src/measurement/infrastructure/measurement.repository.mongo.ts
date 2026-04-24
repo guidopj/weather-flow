@@ -94,7 +94,7 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
 
     return {
       ...query,
-      alarmType: isActive ? AlertType.NONE : { $ne: AlertType.NONE },
+      alarmType: isActive ? { $ne: AlertType.NONE } : AlertType.NONE,
     };
   };
 

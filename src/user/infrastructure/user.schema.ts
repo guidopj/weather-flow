@@ -1,11 +1,13 @@
-import { Schema, Types } from 'mongoose';
+import { Schema } from 'mongoose';
 
 export const UserSchema = new Schema({
   name: String,
   surname: String,
   email: String,
-  subscriptionList: {
-      type: Array<Types.ObjectId>,
+  subscriptionAlerts: [
+    {
+      type: Schema.Types.ObjectId,
       ref: 'WeatherStation',
     },
+  ],
 });

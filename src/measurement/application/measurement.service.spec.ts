@@ -3,6 +3,7 @@ import { MeasurementService } from './measurement.service';
 import { MeasurementRepository } from '../domain/measurement.repository';
 import { WeatherStationRepository } from '../../weather-station/domain/weather-station.repository';
 import { Measurement } from '../domain/measurement';
+import { UserRepository } from 'src/user/domain/user-repository';
 
 describe('MeasurementService', () => {
   let service: MeasurementService;
@@ -21,6 +22,14 @@ describe('MeasurementService', () => {
     findByName: jest.fn(),
   };
 
+  const mockUserRepo = {
+    save: jest.fn(),
+    update: jest.fn(),
+    findById: jest.fn(),
+    delete: jest.fn(),
+    findBySubscribedStation: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -34,6 +43,10 @@ describe('MeasurementService', () => {
         {
           provide: WeatherStationRepository,
           useValue: mockWeatherStationRepo,
+        },
+        {
+          provide: UserRepository,
+          useValue: mockUserRepo,
         },
       ],
     }).compile();
@@ -95,7 +108,10 @@ describe('MeasurementService', () => {
       } as any);
 
       expect(mockMeasurementRepo.findById).toHaveBeenCalledWith('m1');
-      expect(mockMeasurementRepo.update).toHaveBeenCalledWith('m1', measurement);
+      expect(mockMeasurementRepo.update).toHaveBeenCalledWith(
+        'm1',
+        measurement,
+      );
       expect(result.temperature).toBe(25);
       expect(result.humidity).toBe(60);
     });
@@ -144,7 +160,9 @@ describe('MeasurementService', () => {
 
       const result = await service.findByStationName('Station A');
 
-      expect(mockWeatherStationRepo.findByName).toHaveBeenCalledWith('Station A');
+      expect(mockWeatherStationRepo.findByName).toHaveBeenCalledWith(
+        'Station A',
+      );
       expect(result).toEqual([{ id: 'm1' }]);
     });
 
