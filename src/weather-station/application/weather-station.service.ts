@@ -51,7 +51,7 @@ export class WeatherStationService {
     const storedWeatherStation: WeatherStation | null =
       await this.weatherStationRepo.findById(weatherStationId);
     if (!storedWeatherStation)
-      throw new NotFoundException('Weather Station not found');
+      throw new NotFoundException('weather station not found');
 
     // aplicar cambios (sin romper dominio)
     if (newWeatherStation.name)

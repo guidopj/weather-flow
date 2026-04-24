@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MeasurementService } from './measurement.service';
+
 import { MeasurementRepository } from '../domain/measurement.repository';
 import { WeatherStationRepository } from '../../weather-station/domain/weather-station.repository';
+import { UserRepository } from '../../user/domain/user-repository';
+
+import { MeasurementService } from './measurement.service';
+import { NotificationService } from '../../notifications/application/notificationService';
+
 import { Measurement } from '../domain/measurement';
-import { UserRepository } from 'src/user/domain/user-repository';
 
 describe('MeasurementService', () => {
   let service: MeasurementService;
@@ -48,6 +52,12 @@ describe('MeasurementService', () => {
           provide: UserRepository,
           useValue: mockUserRepo,
         },
+        {
+          provide: NotificationService,
+          useValue: {
+            notify: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -85,7 +95,7 @@ describe('MeasurementService', () => {
           humidity: 50,
           atmosphericPressure: 1000,
         }),
-      ).rejects.toThrow('Weather station not found');
+      ).rejects.toThrow('weather station not found');
     });
   });
 

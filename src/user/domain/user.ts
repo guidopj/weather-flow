@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 export class User {
   constructor(
@@ -15,7 +15,7 @@ export class User {
       this.subscriptionAlerts.includes(weatherStationId);
 
     if (alreadySubscribed) {
-      throw new NotFoundException('Weather station already subscribed');
+      throw new ConflictException('Weather station already subscribed');
     }
 
     this.subscriptionAlerts.push(weatherStationId);

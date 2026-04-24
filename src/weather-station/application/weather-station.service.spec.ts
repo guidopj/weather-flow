@@ -58,6 +58,13 @@ describe('WeatherStationService', () => {
       userMockRepo.findById.mockResolvedValue({
         id: 'owner1',
         name: 'Guido',
+        subscribe: jest.fn(),
+      });
+
+      weatherStationMockRepo.create.mockResolvedValue({
+        id: 'ws1',
+        name: 'Station A',
+        ownerId: 'owner1',
       });
 
       const result = await service.create(dto as any);
@@ -68,18 +75,16 @@ describe('WeatherStationService', () => {
     });
 
     it('should throw if user does not exist', async () => {
-      
       userMockRepo.findById.mockResolvedValue(null);
 
       await expect(service.create(dto as any)).rejects.toThrow(
-        'User not found',
+        'Owner not found',
       );
 
       expect(userMockRepo.findById).toHaveBeenCalledWith('owner1');
       expect(weatherStationMockRepo.create).not.toHaveBeenCalled();
     });
 
-    
     it('should fail if ownerId is null', async () => {
       const badDto = {
         ...dto,
@@ -122,7 +127,7 @@ describe('WeatherStationService', () => {
       weatherStationMockRepo.findById.mockResolvedValue(null);
 
       await expect(service.update('ws1', { name: 'X' } as any)).rejects.toThrow(
-        'Weather Station not found',
+        'weather station not found',
       );
     });
 
@@ -134,7 +139,11 @@ describe('WeatherStationService', () => {
       };
 
       weatherStationMockRepo.findById.mockResolvedValue(existing);
-      weatherStationMockRepo.update.mockResolvedValue(undefined);
+      weatherStationMockRepo.create.mockResolvedValue({
+        id: 'ws1',
+        name: 'Station A',
+        ownerId: 'owner1',
+      });
 
       await service.update('ws1', {
         name: 'Updated',

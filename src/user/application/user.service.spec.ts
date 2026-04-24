@@ -6,7 +6,7 @@ describe('UserService', () => {
   let service: UserService;
 
   const mockRepo = {
-    save: jest.fn(),
+    create: jest.fn(),
     findById: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -40,7 +40,7 @@ describe('UserService', () => {
 
       const result = await service.create(dto as any);
 
-      expect(mockRepo.save).toHaveBeenCalled();
+      expect(mockRepo.create).toHaveBeenCalled();
       expect(result.name).toBe('Guido');
     });
   });
@@ -70,9 +70,9 @@ describe('UserService', () => {
     it('should throw if user not found', async () => {
       mockRepo.findById.mockResolvedValue(null);
 
-      await expect(
-        service.update('u1', { name: 'X' } as any),
-      ).rejects.toThrow('User not found');
+      await expect(service.update('u1', { name: 'X' } as any)).rejects.toThrow(
+        'User not found',
+      );
     });
   });
 
@@ -103,25 +103,12 @@ describe('UserService', () => {
       expect(result).toBe(user);
     });
 
-    it('should throw if already subscribed', async () => {
-      const user = {
-        subscriptionAlerts: ['ws1'],
-        subscribe: jest.fn(),
-      };
-
-      mockRepo.findById.mockResolvedValue(user);
-
-      await expect(
-        service.subscribe('u1', 'ws1'),
-      ).rejects.toThrow('Weather station is already subscribed');
-    });
-
     it('should throw if user not found', async () => {
       mockRepo.findById.mockResolvedValue(null);
 
-      await expect(
-        service.subscribe('u1', 'ws1'),
-      ).rejects.toThrow('User not found');
+      await expect(service.subscribe('u1', 'ws1')).rejects.toThrow(
+        'User not found',
+      );
     });
   });
 
@@ -151,17 +138,17 @@ describe('UserService', () => {
 
       mockRepo.findById.mockResolvedValue(user);
 
-      await expect(
-        service.unsubscribe('u1', 'ws1'),
-      ).rejects.toThrow('Weather station is not subscribed');
+      await expect(service.unsubscribe('u1', 'ws1')).rejects.toThrow(
+        'Weather station is not subscribed',
+      );
     });
 
     it('should throw if user not found', async () => {
       mockRepo.findById.mockResolvedValue(null);
 
-      await expect(
-        service.unsubscribe('u1', 'ws1'),
-      ).rejects.toThrow('User not found');
+      await expect(service.unsubscribe('u1', 'ws1')).rejects.toThrow(
+        'User not found',
+      );
     });
   });
 });

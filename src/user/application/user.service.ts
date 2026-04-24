@@ -44,11 +44,7 @@ export class UserService {
     const user: User | null = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    
-
     user.subscribe(weatherStationId);
-
-    
 
     await this.userRepository.update(userId, user);
 

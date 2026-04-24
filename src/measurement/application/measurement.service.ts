@@ -32,7 +32,7 @@ export class MeasurementService {
     );
 
     if (!station) {
-      throw new NotFoundException('Weather Station not found');
+      throw new NotFoundException('weather station not found');
     }
 
     const measurement = Measurement.create(input);
