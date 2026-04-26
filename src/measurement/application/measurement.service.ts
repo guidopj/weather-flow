@@ -11,7 +11,6 @@ import { UpdateMeasurementDto } from '../update-measurement.dto';
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
 
-
 @Injectable()
 export class MeasurementService {
   constructor(
@@ -47,7 +46,7 @@ export class MeasurementService {
       for (const user of users) {
         this.notificationService.notify(
           user.email,
-          `Alert: ${measurement.alarmType} detected`,
+          `Alert: ${measurement.alarmType} detected to User: ${user.name}`,
         );
       }
     }
