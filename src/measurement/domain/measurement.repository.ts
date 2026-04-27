@@ -5,16 +5,17 @@ import { TemperatureRange } from './valueObjects/TemperatureRange';
 export abstract class MeasurementRepository {
   abstract create(measurement: Measurement): Promise<void>;
 
-  abstract update(id: string, measurement: Measurement): Promise<void>
+  abstract update(id: string, measurement: Measurement): Promise<void>;
 
   abstract findByStationId(id: string): Promise<Measurement[]>;
 
-  abstract findById(id: string): Promise<Measurement | null>
+  abstract findById(id: string): Promise<Measurement | null>;
 
-  abstract delete(id: string): Promise<Measurement | null>
+  abstract delete(id: string): Promise<Measurement | null>;
 
   abstract getAllByCriteria(criteria: {
+    weatherStationId?: string;
     temperatureRange?: TemperatureRange;
     isActive?: boolean;
-  });
+  }): Promise<any[]>;
 }

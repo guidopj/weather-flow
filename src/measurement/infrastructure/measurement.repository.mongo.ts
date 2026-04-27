@@ -89,23 +89,33 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
         }
       : query;
 
-  applyActiveAlerts = (isActive?: boolean) => (query: Query) => {
-    if (isActive === undefined) return query;
+  applyActiveAlerts = (onlyAnomalies?: boolean) => (query: Query) => {
+    if (onlyAnomalies === undefined) return query;
 
     return {
       ...query,
-      alarmType: isActive ? { $ne: AlertType.NONE } : AlertType.NONE,
+      alarmType: onlyAnomalies ? { $ne: AlertType.NONE } : AlertType.NONE,
     };
   };
 
+  applyWeatherStation = (weatherStationId?: string) => (query: Query) =>
+    weatherStationId
+      ? {
+          ...query,
+          weatherStationId,
+        }
+      : query;
+
   async getAllByCriteria(criteria: {
+    weatherStationId?: string;
     temperatureRange?: TemperatureRange;
-    isActive?: boolean;
+    onlyAnomalies?: boolean;
   }): Promise<Measurement[]> {
     let query: Query = {};
 
+    query = this.applyWeatherStation(criteria.weatherStationId)(query);
     query = this.applyTemperatureRange(criteria.temperatureRange)(query);
-    query = this.applyActiveAlerts(criteria.isActive)(query);
+    query = this.applyActiveAlerts(criteria.onlyAnomalies)(query);
 
     const docs = await this.model.find(query);
 

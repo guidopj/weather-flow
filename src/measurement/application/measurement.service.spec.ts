@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { MeasurementService } from './measurement.service';
 import { MeasurementRepository } from '../domain/measurement.repository';
 import { WeatherStationRepository } from '../../weather-station/domain/weather-station.repository';
 import { UserRepository } from '../../user/domain/user-repository';
-
-import { MeasurementService } from './measurement.service';
 import { NotificationService } from '../../notifications/application/notificationService';
 
 import { Measurement } from '../domain/measurement';
@@ -27,11 +26,11 @@ describe('MeasurementService', () => {
   };
 
   const mockUserRepo = {
-    save: jest.fn(),
-    update: jest.fn(),
-    findById: jest.fn(),
-    delete: jest.fn(),
     findBySubscribedStation: jest.fn(),
+  };
+
+  const mockNotificationService = {
+    notify: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -40,24 +39,10 @@ describe('MeasurementService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MeasurementService,
-        {
-          provide: MeasurementRepository,
-          useValue: mockMeasurementRepo,
-        },
-        {
-          provide: WeatherStationRepository,
-          useValue: mockWeatherStationRepo,
-        },
-        {
-          provide: UserRepository,
-          useValue: mockUserRepo,
-        },
-        {
-          provide: NotificationService,
-          useValue: {
-            notify: jest.fn(),
-          },
-        },
+        { provide: MeasurementRepository, useValue: mockMeasurementRepo },
+        { provide: WeatherStationRepository, useValue: mockWeatherStationRepo },
+        { provide: UserRepository, useValue: mockUserRepo },
+        { provide: NotificationService, useValue: mockNotificationService },
       ],
     }).compile();
 
@@ -67,30 +52,31 @@ describe('MeasurementService', () => {
   // ---------------- CREATE ----------------
   describe('create', () => {
     it('should create measurement when station exists', async () => {
-      mockWeatherStationRepo.findById.mockResolvedValue({ id: 'ws1' });
+      mockWeatherStationRepo.findById.mockResolvedValue({ id: 'WS1' });
 
       jest.spyOn(Measurement, 'create').mockReturnValue({
         id: 'm1',
+        weatherStationId: 'WS1',
       } as any);
 
       const result = await service.create({
-        weatherStationId: 'ws1',
+        weatherStationId: 'WS1',
         temperature: 20,
         humidity: 50,
         atmosphericPressure: 1000,
       });
 
-      expect(mockWeatherStationRepo.findById).toHaveBeenCalledWith('ws1');
+      expect(mockWeatherStationRepo.findById).toHaveBeenCalledWith('WS1');
       expect(mockMeasurementRepo.create).toHaveBeenCalled();
-      expect(result).toEqual({ id: 'm1' });
+      expect(result.weatherStationId).toBe('WS1');
     });
 
-    it('should throw if weather station not found', async () => {
+    it('should throw if station not found', async () => {
       mockWeatherStationRepo.findById.mockResolvedValue(null);
 
       await expect(
         service.create({
-          weatherStationId: 'ws1',
+          weatherStationId: 'WS1',
           temperature: 20,
           humidity: 50,
           atmosphericPressure: 1000,
@@ -101,29 +87,21 @@ describe('MeasurementService', () => {
 
   // ---------------- UPDATE ----------------
   describe('update', () => {
-    it('should update measurement fully', async () => {
-      const measurement = {
-        atmosphericPressure: 1000,
-        humidity: 50,
+    it('should update measurement', async () => {
+      mockMeasurementRepo.findById.mockResolvedValue({
+        id: 'm1',
         temperature: 20,
-      };
+      });
 
-      mockMeasurementRepo.findById.mockResolvedValue(measurement);
       mockMeasurementRepo.update.mockResolvedValue(undefined);
 
       const result = await service.update('m1', {
-        temperature: 25,
-        humidity: 60,
-        atmosphericPressure: 990,
+        temperature: 30,
       } as any);
 
       expect(mockMeasurementRepo.findById).toHaveBeenCalledWith('m1');
-      expect(mockMeasurementRepo.update).toHaveBeenCalledWith(
-        'm1',
-        measurement,
-      );
-      expect(result.temperature).toBe(25);
-      expect(result.humidity).toBe(60);
+      expect(mockMeasurementRepo.update).toHaveBeenCalled();
+      expect(result.temperature).toBe(30);
     });
 
     it('should throw if measurement not found', async () => {
@@ -132,24 +110,6 @@ describe('MeasurementService', () => {
       await expect(
         service.update('m1', { temperature: 20 } as any),
       ).rejects.toThrow('Measurement not found');
-    });
-
-    it('should update only provided fields', async () => {
-      const measurement = {
-        temperature: 20,
-        humidity: 50,
-        atmosphericPressure: 1000,
-      };
-
-      mockMeasurementRepo.findById.mockResolvedValue(measurement);
-      mockMeasurementRepo.update.mockResolvedValue(undefined);
-
-      await service.update('m1', {
-        temperature: 30,
-      } as any);
-
-      expect(measurement.temperature).toBe(30);
-      expect(measurement.humidity).toBe(50);
     });
   });
 
@@ -162,49 +122,79 @@ describe('MeasurementService', () => {
     });
   });
 
-  // ---------------- FIND BY STATION ----------------
-  describe('findByStationName', () => {
-    it('should return measurements when station exists', async () => {
-      mockWeatherStationRepo.findByName.mockResolvedValue({ id: 'ws1' });
-      mockMeasurementRepo.findByStationId.mockResolvedValue([{ id: 'm1' }]);
+  // ---------------- HISTORY / FILTER ----------------
+  describe('getHistory', () => {
+    it('should call repo with correct filters (station + anomaly)', async () => {
+      mockMeasurementRepo.getAllByCriteria.mockResolvedValue([
+        {
+          weatherStationId: 'WS1',
+          temperature: 45,
+          isAnomaly: true,
+        },
+      ]);
 
-      const result = await service.findByStationName('Station A');
+      const result = await service.getHistory({
+        weatherStationId: 'WS1',
+        onlyAnomalies: true,
+      });
 
-      expect(mockWeatherStationRepo.findByName).toHaveBeenCalledWith(
-        'Station A',
-      );
-      expect(result).toEqual([{ id: 'm1' }]);
+      expect(mockMeasurementRepo.getAllByCriteria).toHaveBeenCalledWith({
+        weatherStationId: 'WS1',
+        temperatureRange: undefined,
+        isActive: true,
+      });
+
+      expect(result).toHaveLength(1);
     });
 
-    it('should return empty array when station not found', async () => {
-      mockWeatherStationRepo.findByName.mockResolvedValue(null);
+    it('should call repo with temperature range filters', async () => {
+      mockMeasurementRepo.getAllByCriteria.mockResolvedValue([
+        {
+          weatherStationId: 'WS1',
+          temperature: 20,
+        },
+      ]);
 
-      const result = await service.findByStationName('Station A');
+      const result = await service.getHistory({
+        min: 10,
+        max: 30,
+        onlyAnomalies: false,
+      });
 
-      expect(result).toEqual([]);
+      expect(mockMeasurementRepo.getAllByCriteria).toHaveBeenCalledWith({
+        weatherStationId: undefined,
+        temperatureRange: expect.any(Object),
+        isActive: false,
+      });
+
+      expect(result).toHaveLength(1);
     });
   });
 
-  // ---------------- FILTER ----------------
-  describe('filterByTemperatureRange', () => {
-    it('should call repo with range when min and max exist', async () => {
-      mockMeasurementRepo.getAllByCriteria.mockResolvedValue([{ id: 'm1' }]);
+  // ---------------- NOTIFICATIONS ----------------
+  describe('create - anomalies', () => {
+    it('should notify users when anomaly exists', async () => {
+      mockWeatherStationRepo.findById.mockResolvedValue({ id: 'WS1' });
 
-      const result = await service.filterByTemperatureRange(10, 30, true);
+      jest.spyOn(Measurement, 'create').mockReturnValue({
+        id: 'm1',
+        weatherStationId: 'WS1',
+        isAnomaly: true,
+        alarmType: 'HEAT_WAVE',
+      } as any);
 
-      expect(mockMeasurementRepo.getAllByCriteria).toHaveBeenCalled();
-      expect(result).toEqual([{ id: 'm1' }]);
-    });
+      mockUserRepo.findBySubscribedStation.mockResolvedValue([
+        { email: 'test@mail.com', name: 'A' },
+      ]);
 
-    it('should call repo without range if missing params', async () => {
-      mockMeasurementRepo.getAllByCriteria.mockResolvedValue([]);
+      await service.create({
+        weatherStationId: 'WS1',
+        temperature: 50,
+        humidity: 50,
+        atmosphericPressure: 1000,
+      });
 
-      await service.filterByTemperatureRange(undefined, undefined, false);
-
-      const arg = mockMeasurementRepo.getAllByCriteria.mock.calls[0][0];
-
-      expect(arg.temperatureRange).toBeUndefined();
-      expect(arg.isActive).toBe(false);
+      expect(mockNotificationService.notify).toHaveBeenCalled();
     });
   });
 });

@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { MeasurementService } from './application/measurement.service';
 import { FilterQueryDto } from '../dto/filterQuery.dto';
 import { CreateMeasurementDto } from './createMeasurement.dto';
@@ -14,7 +23,10 @@ export class MeasurementController {
   }
 
   @Patch(':id')
-  updateMeasurement(@Param('id') id: string, @Body() dto: UpdateMeasurementDto) {
+  updateMeasurement(
+    @Param('id') id: string,
+    @Body() dto: UpdateMeasurementDto,
+  ) {
     return this.measurementService.update(id, dto);
   }
 
@@ -35,5 +47,20 @@ export class MeasurementController {
       query.max,
       query.isActive,
     );
+  }
+
+  @Get('history')
+  async getHistory(
+    @Query('weatherStationId') weatherStationId?: string,
+    @Query('min') min?: string,
+    @Query('max') max?: string,
+    @Query('onlyAnomalies') onlyAnomalies?: string,
+  ) {
+    return this.measurementService.getHistory({
+      weatherStationId,
+      min: min ? Number(min) : undefined,
+      max: max ? Number(max) : undefined,
+      onlyAnomalies: onlyAnomalies === 'true',
+    });
   }
 }

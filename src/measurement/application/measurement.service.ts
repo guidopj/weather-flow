@@ -82,19 +82,33 @@ export class MeasurementService {
     return this.measurementRepo.findByStationId(weatheStation.id);
   }
 
+  async getHistory(filters: {
+    weatherStationId?: string;
+    min?: number;
+    max?: number;
+    onlyAnomalies?: boolean;
+  }): Promise<Measurement[]> {
+    const temperatureRange =
+      filters.min !== undefined && filters.max !== undefined
+        ? new TemperatureRange(filters.min, filters.max)
+        : undefined;
+
+    return this.measurementRepo.getAllByCriteria({
+      weatherStationId: filters.weatherStationId,
+      temperatureRange,
+      isActive: filters.onlyAnomalies
+    });
+  }
+
   async filterByTemperatureRange(
     min?: number,
     max?: number,
     isActive?: boolean,
   ): Promise<Measurement[]> {
-    const range =
-      min !== undefined && max !== undefined
-        ? new TemperatureRange(min, max)
-        : undefined;
-
-    return this.measurementRepo.getAllByCriteria({
-      temperatureRange: range,
-      isActive: isActive,
+    return this.getHistory({
+      min,
+      max,
+      onlyAnomalies: isActive,
     });
   }
 }
