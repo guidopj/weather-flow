@@ -1,0 +1,47 @@
+@startuml
+!define table(x) class x << (T,#FFAAAA) >>
+
+' ======================
+' USER
+' ======================
+table(User) {
+  +id: string
+  name: string
+  email: string
+  subscriptionAlerts: string[]
+}
+
+' ======================
+' WEATHER STATION
+' ======================
+table(WeatherStation) {
+  +id: string
+  name: string
+  location: string
+  model: string
+  isActive: boolean
+  ownerId: string
+}
+
+' ======================
+' MEASUREMENT
+' ======================
+table(Measurement) {
+  +id: string
+  weatherStationId: string
+  timestamp: Date
+  temperature: number
+  humidity: number
+  atmosphericPressure: number
+  alarmType: string
+}
+
+' ======================
+' RELACIONES
+' ======================
+
+WeatherStation ||--o{ Measurement : "has many"
+
+User }o--o{ WeatherStation : "subscribes to (via subscriptionAlerts)"
+
+@enduml
