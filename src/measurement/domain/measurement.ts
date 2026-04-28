@@ -1,4 +1,5 @@
 
+import { Humidity } from "../valueObjets/humidity";
 import { Temperature } from "../valueObjets/temperature";
 import { AlertType } from "./AlertTypes";
 import { NotFoundException } from "@nestjs/common";
@@ -8,7 +9,7 @@ export class Measurement {
     public weatherStationId: string,
     public timestamp: Date,
     public temperature: Temperature,
-    public humidity: number,
+    public humidity: Humidity,
     public atmosphericPressure: number,
     public alarmType: AlertType | null,
   ) {
@@ -18,7 +19,7 @@ export class Measurement {
   static create(props: {
     weatherStationId: string;
     temperature: Temperature;
-    humidity: number;
+    humidity: Humidity;
     atmosphericPressure: number;
   }): Measurement {
     const alarmType = this.calculateAlarmType(props);
@@ -42,7 +43,7 @@ export class Measurement {
       throw new NotFoundException('Temperature out of range');
     }
 
-    if (this.humidity < 0 || this.humidity > 100) {
+    if (this.humidity.value < 0 || this.humidity.value > 100) {
       throw new NotFoundException('Humidity out of range');
     }
 
@@ -53,13 +54,13 @@ export class Measurement {
 
   private static calculateAlarmType(input: {
     temperature: Temperature;
-    humidity: number;
+    humidity: Humidity;
     atmosphericPressure: number;
   }): AlertType | null {
     if (input.temperature.value > 40) return AlertType.HEAT_WAVE;
     if (input.temperature.value < 0) return AlertType.FROST;
     if (input.atmosphericPressure < 980) return AlertType.LOW_PRESSURE;
-    if (input.humidity > 90) return AlertType.HIGH_HUMIDITY;
+    if (input.humidity.value > 90) return AlertType.HIGH_HUMIDITY;
     return AlertType.NONE;
   }
 }

@@ -12,6 +12,13 @@ const TemperatureSchema = new Schema(
   { _id: false },
 );
 
+const HumiditySchema = new Schema(
+  {
+    value: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
 export const MeasurementSchema = new Schema({
   weatherStationId: String,
   timestamp: Date,
@@ -21,7 +28,10 @@ export const MeasurementSchema = new Schema({
     required: true,
   },
 
-  humidity: Number,
+  humidity: {
+    type: HumiditySchema,
+    required: true,
+  },
   atmosphericPressure: Number,
 
   alarmType: {

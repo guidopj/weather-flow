@@ -1,3 +1,4 @@
+import { Humidity } from '../valueObjets/humidity';
 import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
 import { AlertType } from './AlertTypes';
 import { Measurement } from './measurement';
@@ -7,7 +8,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(45, TemperatureUnit.CELSIUS),
-      humidity: 50,
+      humidity: Humidity.create(50),
       atmosphericPressure: 1000,
     });
 
@@ -18,7 +19,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(-5, TemperatureUnit.CELSIUS),
-      humidity: 50,
+      humidity: Humidity.create(50),
       atmosphericPressure: 1000,
     });
 
@@ -29,7 +30,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
-      humidity: 50,
+      humidity: Humidity.create(50),
       atmosphericPressure: 900,
     });
 
@@ -40,7 +41,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
-      humidity: 50,
+      humidity: Humidity.create(50),
       atmosphericPressure: 900,
     });
 
@@ -51,7 +52,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
-      humidity: 95,
+      humidity: Humidity.create(95),
       atmosphericPressure: 1000,
     });
 
@@ -62,7 +63,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
-      humidity: 50,
+      humidity: Humidity.create(50),
       atmosphericPressure: 1000,
     });
 
@@ -76,7 +77,7 @@ describe('Measurement', () => {
       Measurement.create({
         weatherStationId: 'WS1',
         temperature: Temperature.create(80, TemperatureUnit.CELSIUS),
-        humidity: 50,
+        humidity: Humidity.create(50),
         atmosphericPressure: 1000,
       }),
     ).toThrow();
@@ -87,7 +88,7 @@ describe('Measurement', () => {
       Measurement.create({
         weatherStationId: 'WS1',
         temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
-        humidity: 200,
+        humidity: Humidity.create(200),
         atmosphericPressure: 1000,
       }),
     ).toThrow();
@@ -97,7 +98,7 @@ describe('Measurement', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
       temperature: Temperature.create(45, TemperatureUnit.CELSIUS),
-      humidity: 50,
+      humidity: Humidity.create(50),
       atmosphericPressure: 1000,
     });
 

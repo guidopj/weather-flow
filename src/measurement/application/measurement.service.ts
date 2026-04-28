@@ -11,6 +11,7 @@ import { UpdateMeasurementDto } from '../update-measurement.dto';
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
 import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
+import { Humidity } from '../valueObjets/humidity';
 
 @Injectable()
 export class MeasurementService {
@@ -41,7 +42,7 @@ export class MeasurementService {
         input.temperature,
         TemperatureUnit.CELSIUS,
       ),
-      humidity: input.humidity,
+      humidity: Humidity.create(input.humidity),
       atmosphericPressure: input.atmosphericPressure,
     });
 
@@ -75,7 +76,7 @@ export class MeasurementService {
     }
 
     if (input.humidity !== undefined) {
-      measurement.humidity = input.humidity;
+      measurement.humidity = Humidity.create(input.humidity);
     }
 
     if (input.temperature !== undefined) {
