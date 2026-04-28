@@ -7,6 +7,7 @@ import { UserRepository } from '../../user/domain/user-repository';
 import { NotificationService } from '../../notifications/application/notificationService';
 
 import { Measurement } from '../domain/measurement';
+import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
 
 describe('MeasurementService', () => {
   let service: MeasurementService;
@@ -90,7 +91,7 @@ describe('MeasurementService', () => {
     it('should update measurement', async () => {
       mockMeasurementRepo.findById.mockResolvedValue({
         id: 'm1',
-        temperature: 20,
+        temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       });
 
       mockMeasurementRepo.update.mockResolvedValue(undefined);
@@ -101,7 +102,7 @@ describe('MeasurementService', () => {
 
       expect(mockMeasurementRepo.findById).toHaveBeenCalledWith('m1');
       expect(mockMeasurementRepo.update).toHaveBeenCalled();
-      expect(result.temperature).toBe(30);
+      expect(result.temperature.value).toBe(30);
     });
 
     it('should throw if measurement not found', async () => {

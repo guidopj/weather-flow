@@ -1,9 +1,26 @@
-import { Schema, Types } from "mongoose";
+import { Schema, Types } from 'mongoose';
+
+const TemperatureSchema = new Schema(
+  {
+    value: { type: Number, required: true },
+    unit: {
+      type: String,
+      enum: ['C', 'F', 'K'],
+      required: true,
+    },
+  },
+  { _id: false },
+);
 
 export const MeasurementSchema = new Schema({
   weatherStationId: String,
   timestamp: Date,
-  temperature: Number,
+
+  temperature: {
+    type: TemperatureSchema,
+    required: true,
+  },
+
   humidity: Number,
   atmosphericPressure: Number,
 

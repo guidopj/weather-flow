@@ -10,6 +10,7 @@ import { UpdateMeasurementDto } from '../update-measurement.dto';
 
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
+import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
 
 @Injectable()
 export class MeasurementService {
@@ -34,7 +35,15 @@ export class MeasurementService {
       throw new NotFoundException('weather station not found');
     }
 
-    const measurement = Measurement.create(input);
+    const measurement = Measurement.create({
+      weatherStationId: input.weatherStationId,
+      temperature: Temperature.create(
+        input.temperature,
+        TemperatureUnit.CELSIUS,
+      ),
+      humidity: input.humidity,
+      atmosphericPressure: input.atmosphericPressure,
+    });
 
     await this.measurementRepo.create(measurement);
 
@@ -55,14 +64,26 @@ export class MeasurementService {
   }
 
   async update(measurementId: string, input: UpdateMeasurementDto) {
-    const measurement: Measurement | null =
-      await this.measurementRepo.findById(measurementId);
-    if (!measurement) throw new NotFoundException('Measurement not found');
+    const measurement = await this.measurementRepo.findById(measurementId);
 
-    if (input.atmosphericPressure)
+    if (!measurement) {
+      throw new NotFoundException('Measurement not found');
+    }
+
+    if (input.atmosphericPressure !== undefined) {
       measurement.atmosphericPressure = input.atmosphericPressure;
-    if (input.humidity) measurement.humidity = input.humidity;
-    if (input.temperature) measurement.temperature = input.temperature;
+    }
+
+    if (input.humidity !== undefined) {
+      measurement.humidity = input.humidity;
+    }
+
+    if (input.temperature !== undefined) {
+      measurement.temperature = Temperature.create(
+        input.temperature,
+        measurement.temperature.unit,
+      );
+    }
 
     await this.measurementRepo.update(measurementId, measurement);
 
@@ -96,7 +117,7 @@ export class MeasurementService {
     return this.measurementRepo.getAllByCriteria({
       weatherStationId: filters.weatherStationId,
       temperatureRange,
-      isActive: filters.onlyAnomalies
+      isActive: filters.onlyAnomalies,
     });
   }
 

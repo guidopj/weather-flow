@@ -1,3 +1,4 @@
+import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
 import { AlertType } from './AlertTypes';
 import { Measurement } from './measurement';
 
@@ -5,7 +6,7 @@ describe('Measurement', () => {
   it('should detect heat wave', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: 45,
+      temperature: Temperature.create(45, TemperatureUnit.CELSIUS),
       humidity: 50,
       atmosphericPressure: 1000,
     });
@@ -16,7 +17,7 @@ describe('Measurement', () => {
   it('should detect frost', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: -5,
+      temperature: Temperature.create(-5, TemperatureUnit.CELSIUS),
       humidity: 50,
       atmosphericPressure: 1000,
     });
@@ -27,7 +28,7 @@ describe('Measurement', () => {
   it('should detect low pressure', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: 20,
+      temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: 50,
       atmosphericPressure: 900,
     });
@@ -38,7 +39,7 @@ describe('Measurement', () => {
   it('should detect low pressure', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: 20,
+      temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: 50,
       atmosphericPressure: 900,
     });
@@ -49,7 +50,7 @@ describe('Measurement', () => {
   it('should detect high humidity', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: 20,
+      temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: 95,
       atmosphericPressure: 1000,
     });
@@ -60,7 +61,7 @@ describe('Measurement', () => {
   it('should return NONE when normal', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: 20,
+      temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: 50,
       atmosphericPressure: 1000,
     });
@@ -74,7 +75,7 @@ describe('Measurement', () => {
     expect(() =>
       Measurement.create({
         weatherStationId: 'WS1',
-        temperature: 80,
+        temperature: Temperature.create(80, TemperatureUnit.CELSIUS),
         humidity: 50,
         atmosphericPressure: 1000,
       }),
@@ -85,7 +86,7 @@ describe('Measurement', () => {
     expect(() =>
       Measurement.create({
         weatherStationId: 'WS1',
-        temperature: 20,
+        temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
         humidity: 200,
         atmosphericPressure: 1000,
       }),
@@ -95,7 +96,7 @@ describe('Measurement', () => {
   it('should mark anomaly when alarm exists', () => {
     const m = Measurement.create({
       weatherStationId: 'WS1',
-      temperature: 45,
+      temperature: Temperature.create(45, TemperatureUnit.CELSIUS),
       humidity: 50,
       atmosphericPressure: 1000,
     });

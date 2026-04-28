@@ -1,4 +1,5 @@
 
+import { Temperature } from "../valueObjets/temperature";
 import { AlertType } from "./AlertTypes";
 import { NotFoundException } from "@nestjs/common";
 
@@ -6,7 +7,7 @@ export class Measurement {
   constructor(
     public weatherStationId: string,
     public timestamp: Date,
-    public temperature: number,
+    public temperature: Temperature,
     public humidity: number,
     public atmosphericPressure: number,
     public alarmType: AlertType | null,
@@ -16,7 +17,7 @@ export class Measurement {
 
   static create(props: {
     weatherStationId: string;
-    temperature: number;
+    temperature: Temperature;
     humidity: number;
     atmosphericPressure: number;
   }): Measurement {
@@ -37,7 +38,7 @@ export class Measurement {
   }
 
   private validate() {
-    if (this.temperature < -90 || this.temperature > 60) {
+    if (this.temperature.value < -90 || this.temperature.value > 60) {
       throw new NotFoundException('Temperature out of range');
     }
 
@@ -51,12 +52,12 @@ export class Measurement {
   }
 
   private static calculateAlarmType(input: {
-    temperature: number;
+    temperature: Temperature;
     humidity: number;
     atmosphericPressure: number;
   }): AlertType | null {
-    if (input.temperature > 40) return AlertType.HEAT_WAVE;
-    if (input.temperature < 0) return AlertType.FROST;
+    if (input.temperature.value > 40) return AlertType.HEAT_WAVE;
+    if (input.temperature.value < 0) return AlertType.FROST;
     if (input.atmosphericPressure < 980) return AlertType.LOW_PRESSURE;
     if (input.humidity > 90) return AlertType.HIGH_HUMIDITY;
     return AlertType.NONE;

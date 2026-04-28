@@ -7,11 +7,12 @@ import { MeasurementRepository } from '../domain/measurement.repository';
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
 import { AlertType } from '../domain/AlertTypes';
+import { Temperature } from '../valueObjets/temperature';
 
 type MeasurementType = {
   weatherStationId: string;
   timestamp: Date;
-  temperature: number;
+  temperature: Temperature;
   humidity: number;
   atmosphericPressure: number;
   alarmType: AlertType | null;
@@ -44,7 +45,10 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
     return {
       weatherStationId: measurement.weatherStationId,
       timestamp: measurement.timestamp,
-      temperature: measurement.temperature,
+      temperature: {
+        value: measurement.temperature.value,
+        unit: measurement.temperature.unit,
+      },
       humidity: measurement.humidity,
       atmosphericPressure: measurement.atmosphericPressure,
       alarmType: measurement.alarmType ?? AlertType.NONE,
