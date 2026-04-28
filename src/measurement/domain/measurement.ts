@@ -1,4 +1,5 @@
 
+import { AtmosphericPressure } from "../valueObjets/atmosphericPressure";
 import { Humidity } from "../valueObjets/humidity";
 import { Temperature } from "../valueObjets/temperature";
 import { AlertType } from "./AlertTypes";
@@ -10,7 +11,7 @@ export class Measurement {
     public timestamp: Date,
     public temperature: Temperature,
     public humidity: Humidity,
-    public atmosphericPressure: number,
+    public atmosphericPressure: AtmosphericPressure,
     public alarmType: AlertType | null,
   ) {
     this.validate();
@@ -20,7 +21,7 @@ export class Measurement {
     weatherStationId: string;
     temperature: Temperature;
     humidity: Humidity;
-    atmosphericPressure: number;
+    atmosphericPressure: AtmosphericPressure;
   }): Measurement {
     const alarmType = this.calculateAlarmType(props);
 
@@ -47,7 +48,7 @@ export class Measurement {
       throw new NotFoundException('Humidity out of range');
     }
 
-    if (this.atmosphericPressure < 300 || this.atmosphericPressure > 1100) {
+    if (this.atmosphericPressure.value < 300 || this.atmosphericPressure.value > 1100) {
       throw new NotFoundException('Pressure out of range');
     }
   }
@@ -55,11 +56,11 @@ export class Measurement {
   private static calculateAlarmType(input: {
     temperature: Temperature;
     humidity: Humidity;
-    atmosphericPressure: number;
+    atmosphericPressure: AtmosphericPressure;
   }): AlertType | null {
     if (input.temperature.value > 40) return AlertType.HEAT_WAVE;
     if (input.temperature.value < 0) return AlertType.FROST;
-    if (input.atmosphericPressure < 980) return AlertType.LOW_PRESSURE;
+    if (input.atmosphericPressure.value < 980) return AlertType.LOW_PRESSURE;
     if (input.humidity.value > 90) return AlertType.HIGH_HUMIDITY;
     return AlertType.NONE;
   }

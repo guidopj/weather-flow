@@ -9,13 +9,14 @@ import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
 import { AlertType } from '../domain/AlertTypes';
 import { Temperature } from '../valueObjets/temperature';
 import { Humidity } from '../valueObjets/humidity';
+import { AtmosphericPressure } from '../valueObjets/atmosphericPressure';
 
 type MeasurementType = {
   weatherStationId: string;
   timestamp: Date;
   temperature: Temperature;
   humidity: Humidity;
-  atmosphericPressure: number;
+  atmosphericPressure: AtmosphericPressure;
   alarmType: AlertType | null;
 };
 

@@ -1,3 +1,4 @@
+import { AtmosphericPressure } from '../valueObjets/atmosphericPressure';
 import { Humidity } from '../valueObjets/humidity';
 import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
 import { AlertType } from './AlertTypes';
@@ -9,7 +10,7 @@ describe('Measurement', () => {
       weatherStationId: 'WS1',
       temperature: Temperature.create(45, TemperatureUnit.CELSIUS),
       humidity: Humidity.create(50),
-      atmosphericPressure: 1000,
+      atmosphericPressure: AtmosphericPressure.create(1000),
     });
 
     expect(m.alarmType).toBe(AlertType.HEAT_WAVE);
@@ -20,7 +21,7 @@ describe('Measurement', () => {
       weatherStationId: 'WS1',
       temperature: Temperature.create(-5, TemperatureUnit.CELSIUS),
       humidity: Humidity.create(50),
-      atmosphericPressure: 1000,
+      atmosphericPressure: AtmosphericPressure.create(1000),
     });
 
     expect(m.alarmType).toBe(AlertType.FROST);
@@ -31,18 +32,7 @@ describe('Measurement', () => {
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: Humidity.create(50),
-      atmosphericPressure: 900,
-    });
-
-    expect(m.alarmType).toBe(AlertType.LOW_PRESSURE);
-  });
-
-  it('should detect low pressure', () => {
-    const m = Measurement.create({
-      weatherStationId: 'WS1',
-      temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
-      humidity: Humidity.create(50),
-      atmosphericPressure: 900,
+      atmosphericPressure: AtmosphericPressure.create(900),
     });
 
     expect(m.alarmType).toBe(AlertType.LOW_PRESSURE);
@@ -53,7 +43,7 @@ describe('Measurement', () => {
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: Humidity.create(95),
-      atmosphericPressure: 1000,
+      atmosphericPressure: AtmosphericPressure.create(1000),
     });
 
     expect(m.alarmType).toBe(AlertType.HIGH_HUMIDITY);
@@ -64,7 +54,7 @@ describe('Measurement', () => {
       weatherStationId: 'WS1',
       temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
       humidity: Humidity.create(50),
-      atmosphericPressure: 1000,
+      atmosphericPressure: AtmosphericPressure.create(1000),
     });
 
     expect(m.alarmType).toBe(AlertType.NONE);
@@ -78,7 +68,7 @@ describe('Measurement', () => {
         weatherStationId: 'WS1',
         temperature: Temperature.create(80, TemperatureUnit.CELSIUS),
         humidity: Humidity.create(50),
-        atmosphericPressure: 1000,
+        atmosphericPressure: AtmosphericPressure.create(1000),
       }),
     ).toThrow();
   });
@@ -89,7 +79,7 @@ describe('Measurement', () => {
         weatherStationId: 'WS1',
         temperature: Temperature.create(20, TemperatureUnit.CELSIUS),
         humidity: Humidity.create(200),
-        atmosphericPressure: 1000,
+        atmosphericPressure: AtmosphericPressure.create(1000),
       }),
     ).toThrow();
   });
@@ -99,7 +89,7 @@ describe('Measurement', () => {
       weatherStationId: 'WS1',
       temperature: Temperature.create(45, TemperatureUnit.CELSIUS),
       humidity: Humidity.create(50),
-      atmosphericPressure: 1000,
+      atmosphericPressure: AtmosphericPressure.create(1000),
     });
 
     expect(m.isAnomaly).toBe(true);
