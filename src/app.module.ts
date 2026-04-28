@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MeasurementModule } from './measurement/measurement.module';
@@ -9,11 +11,28 @@ import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot("mongodb://localhost:27017/weather-flow-db"),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    MongooseModule.forRootAsync({
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => {
+    const user = config.getOrThrow<string>('MONGO_USER');
+    const pass = encodeURIComponent(config.getOrThrow<string>('MONGO_PASS'));
+    const db = config.getOrThrow<string>('MONGO_DB');
+
+    // Use the SRV format (recommended)
+    const uri = `mongodb+srv://${user}:${pass}@ac-xxxx.a72wqxl.mongodb.net/${db}?retryWrites=true&w=majority`;
+    return {
+      uri,
+    };
+  },
+}),
     MeasurementModule,
     UserModule,
     WeatherStationModule,
-    NotificationsModule
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

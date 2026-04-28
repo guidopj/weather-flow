@@ -4,6 +4,10 @@ import { ValidationPipe } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 
+// sin estos DNS la conexión con mongo atlas no me funciona
+import dns from 'dns';
+dns.setServers(['1.1.1.1', '8.8.8.8']);   // ← Force reliable DNS (Cloudflare + Google)
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
