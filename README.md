@@ -1,5 +1,3 @@
-## Project setup
-
 ```bash
 $ npm install
 ```
@@ -47,3 +45,23 @@ $ npm run test:cov
 - **Domain Logic**: anomaly detection inside `Measurement`
 - **Application Service**: `MeasurementService` orchestrates the flow
 - **Side Effects**: notifications triggered only on anomalies
+
+## DB Schema
+
+<img width="383" height="597" alt="db-model" src="https://github.com/user-attachments/assets/e5ffba56-38e6-4caf-af9d-0cb0d9386ba1" />
+
+## C4 diagrams
+
+### C1 - Context
+
+![C1 Context Diagram](https://github.com/user-attachments/assets/7089d212-f7b5-4786-b934-d0d2bfd0ee89)
+
+### C2 - Containers
+
+<img width="1011" height="471" alt="C3_Components" src="https://github.com/user-attachments/assets/1ae3a10b-481b-4327-89f9-4ed72301cec9" />
+
+![C2 Containers Diagram](https://github.com/user-attachments/assets/bec7ff36-c98a-4244-96af-f9503ec91a52)
+
+### C3 - Measurement Component
+
+<img width="1011" height="471" alt="C3_Components" src="https://github.com/user-attachments/assets/18986bef-41f3-495d-b6a4-f7fd107406ed" />
