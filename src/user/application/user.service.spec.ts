@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { UserRepository } from '../domain/user-repository';
+import { Email } from '../domain/valueObjects/email';
 
 describe('UserService', () => {
   let service: UserService;
@@ -51,7 +52,7 @@ describe('UserService', () => {
       const user = {
         name: 'Guido-old',
         surname: 'Pujadas-old',
-        email: 'guidoOld@test.com',
+        email: Email.create('guidoOld@test.com'),
         subscriptionAlerts: [],
       };
 

@@ -1,10 +1,11 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { Email } from './valueObjects/email';
 
 export class User {
   constructor(
     public name: string,
     public surname: string,
-    public email: string,
+    public email: Email,
     //IDs de estaciones de las cuales desea recibir alertas
     public subscriptionAlerts: Array<string> = [],
     public id?: string,

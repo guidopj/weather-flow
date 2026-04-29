@@ -56,7 +56,7 @@ export class MeasurementService {
 
       for (const user of users) {
         this.notificationService.notify(
-          user.email,
+          user.email.value,
           `Alert: ${measurement.alarmType} detected to User: ${user.name}`,
         );
       }

@@ -8,13 +8,16 @@ import { User } from '../domain/user';
 import { CreateUserDto } from '../create-user.dto';
 import { UpdateUserDto } from '../update-user.dto';
 import { UserRepository } from '../domain/user-repository';
+import { Email } from '../domain/valueObjects/email';
 
 @Injectable()
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async create(input: CreateUserDto) {
-    const newUser = new User(input.name, input.surname, input.email, []);
+      const email = Email.create(input.email);
+
+    const newUser = new User(input.name, input.surname, email, []);
 
     await this.userRepository.create(newUser);
 
@@ -27,7 +30,7 @@ export class UserService {
 
     if (input.name) user.name = input.name;
     if (input.surname) user.surname = input.surname;
-    if (input.email) user.email = input.email;
+    if (input.email) user.email = Email.create(input.email);
     if (input.subscriptionAlerts)
       user.subscriptionAlerts = input.subscriptionAlerts;
 

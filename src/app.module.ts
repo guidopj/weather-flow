@@ -22,7 +22,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     const pass = encodeURIComponent(config.getOrThrow<string>('MONGO_PASS'));
     const db = config.getOrThrow<string>('MONGO_DB');
 
-    // Use the SRV format (recommended)
     const uri = `mongodb+srv://${user}:${pass}@ac-xxxx.a72wqxl.mongodb.net/${db}?retryWrites=true&w=majority`;
     return {
       uri,

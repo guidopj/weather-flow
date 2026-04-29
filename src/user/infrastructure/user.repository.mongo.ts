@@ -6,11 +6,12 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../user/domain/user-repository';
 import { User } from '../domain/user';
 import { PersistedUser } from '../domain/user.types';
+import { Email } from '../domain/valueObjects/email';
 
 type UserDocument = HydratedDocument<{
   name: string;
   surname: string;
-  email: string;
+  email: Email;
   subscriptionAlerts: Array<string>;
 }>;
 

@@ -1,13 +1,14 @@
 import { WeatherStation } from '../../weather-station/domain/weatherStation';
 import { User } from '../../user/domain/user';
 import { MeasurementService } from '../../measurement/application/measurement.service';
+import { Email } from '../../user/domain/valueObjects/email';
 
 describe('Integration - create measurement and notify users', () => {
   it('should notify correct users based on subscriptions', async () => {
     // Users
-    const u1 = new User('A', 'A', 'a@mail.com');
-    const u2 = new User('B', 'B', 'b@mail.com');
-    const u3 = new User('C', 'C', 'c@mail.com');
+    const u1 = new User('A', 'A', Email.create('a@mail.com'));
+    const u2 = new User('B', 'B', Email.create('b@mail.com'));
+    const u3 = new User('C', 'C', Email.create('c@mail.com'));
 
     u1.subscribe('WS1');
     u1.subscribe('WS2');
