@@ -16,6 +16,6 @@ export abstract class MeasurementRepository {
   abstract getAllByCriteria(criteria: {
     weatherStationId?: string;
     temperatureRange?: TemperatureRange;
-    isActive?: boolean;
+    onlyAnomalies?: boolean;
   }): Promise<any[]>;
 }

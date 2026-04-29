@@ -142,7 +142,7 @@ describe('MeasurementService', () => {
       expect(mockMeasurementRepo.getAllByCriteria).toHaveBeenCalledWith({
         weatherStationId: 'WS1',
         temperatureRange: undefined,
-        isActive: true,
+        onlyAnomalies: true,
       });
 
       expect(result).toHaveLength(1);
@@ -165,7 +165,7 @@ describe('MeasurementService', () => {
       expect(mockMeasurementRepo.getAllByCriteria).toHaveBeenCalledWith({
         weatherStationId: undefined,
         temperatureRange: expect.any(Object),
-        isActive: false,
+        onlyAnomalies: false,
       });
 
       expect(result).toHaveLength(1);

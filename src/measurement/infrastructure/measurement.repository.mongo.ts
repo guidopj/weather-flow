@@ -7,16 +7,16 @@ import { MeasurementRepository } from '../domain/measurement.repository';
 import { Measurement } from '../domain/measurement';
 import { TemperatureRange } from '../domain/valueObjects/TemperatureRange';
 import { AlertType } from '../domain/AlertTypes';
-import { Temperature } from '../valueObjets/temperature';
-import { Humidity } from '../valueObjets/humidity';
 import { AtmosphericPressure } from '../valueObjets/atmosphericPressure';
+import { Humidity } from '../valueObjets/humidity';
+import { Temperature, TemperatureUnit } from '../valueObjets/temperature';
 
 type MeasurementType = {
   weatherStationId: string;
   timestamp: Date;
-  temperature: Temperature;
-  humidity: Humidity;
-  atmosphericPressure: AtmosphericPressure;
+  temperature: number;
+  humidity: number;
+  atmosphericPressure: number;
   alarmType: AlertType | null;
 };
 
@@ -40,19 +40,20 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
   }
 
   async delete(id: string): Promise<Measurement | null> {
-    return this.model.findByIdAndDelete(id);
+    const doc = await this.model.findByIdAndDelete(id);
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
   }
 
   private toPersistence(measurement: Measurement) {
     return {
       weatherStationId: measurement.weatherStationId,
       timestamp: measurement.timestamp,
-      temperature: {
-        value: measurement.temperature.value,
-        unit: measurement.temperature.unit,
-      },
+      temperature: measurement.temperature.value,
       humidity: measurement.humidity.value,
-      atmosphericPressure: measurement.atmosphericPressure,
+      atmosphericPressure: measurement.atmosphericPressure.value,
       alarmType: measurement.alarmType ?? AlertType.NONE,
     };
   }
@@ -61,9 +62,9 @@ export class MeasurementRepositoryMongo implements MeasurementRepository {
     return new Measurement(
       doc.weatherStationId,
       doc.timestamp,
-      doc.temperature,
-      doc.humidity,
-      doc.atmosphericPressure,
+      Temperature.create(doc.temperature, TemperatureUnit.CELSIUS),
+      Humidity.create(doc.humidity),
+      AtmosphericPressure.create(doc.atmosphericPressure),
       doc.alarmType,
     );
   }

@@ -44,7 +44,9 @@ export class MeasurementService {
         TemperatureUnit.CELSIUS,
       ),
       humidity: Humidity.create(input.humidity),
-      atmosphericPressure: AtmosphericPressure.create(input.atmosphericPressure),
+      atmosphericPressure: AtmosphericPressure.create(
+        input.atmosphericPressure,
+      ),
     });
 
     await this.measurementRepo.create(measurement);
@@ -73,7 +75,9 @@ export class MeasurementService {
     }
 
     if (input.atmosphericPressure !== undefined) {
-      measurement.atmosphericPressure = AtmosphericPressure.create(input.atmosphericPressure);
+      measurement.atmosphericPressure = AtmosphericPressure.create(
+        input.atmosphericPressure,
+      );
     }
 
     if (input.humidity !== undefined) {
@@ -119,7 +123,7 @@ export class MeasurementService {
     return this.measurementRepo.getAllByCriteria({
       weatherStationId: filters.weatherStationId,
       temperatureRange,
-      isActive: filters.onlyAnomalies,
+      onlyAnomalies: filters.onlyAnomalies,
     });
   }
 

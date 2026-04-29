@@ -11,7 +11,7 @@ import { Email } from '../domain/valueObjects/email';
 type UserDocument = HydratedDocument<{
   name: string;
   surname: string;
-  email: Email;
+  email: string;
   subscriptionAlerts: Array<string>;
 }>;
 
@@ -26,7 +26,7 @@ export class UserRepositoryMongo implements UserRepository {
     return {
       name: user.name,
       surname: user.surname,
-      email: user.email,
+      email: user.email.value,
       subscriptionAlerts: user.subscriptionAlerts,
     };
   }
@@ -35,7 +35,7 @@ export class UserRepositoryMongo implements UserRepository {
     return new User(
       doc.name,
       doc.surname,
-      doc.email,
+      Email.create(doc.email),
       doc.subscriptionAlerts,
       doc._id.toString(),
     ) as PersistedUser;
