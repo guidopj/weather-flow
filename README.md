@@ -18,6 +18,10 @@ $ npm run test
 # test coverage
 $ npm run test:cov
 ```
+## Diagrama de clases
+
+<img width="499" height="341" alt="image" src="https://github.com/user-attachments/assets/b604fb65-200f-4ed2-ab1b-f4afff6f976b" />
+
 
 ## Create Measurement
 
