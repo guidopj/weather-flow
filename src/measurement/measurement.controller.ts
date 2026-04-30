@@ -12,6 +12,7 @@ import { MeasurementService } from './application/measurement.service';
 import { FilterQueryDto } from '../dto/filterQuery.dto';
 import { CreateMeasurementDto } from './createMeasurement.dto';
 import { UpdateMeasurementDto } from './update-measurement.dto';
+import { GetHistoryQueryDto } from 'src/dto/getHistoryQuery.dto';
 
 @Controller('measurements')
 export class MeasurementController {
@@ -50,17 +51,7 @@ export class MeasurementController {
   }
 
   @Get('history')
-  async getHistory(
-    @Query('weatherStationId') weatherStationId?: string,
-    @Query('min') min?: string,
-    @Query('max') max?: string,
-    @Query('onlyAnomalies') onlyAnomalies?: string,
-  ) {
-    return this.measurementService.getHistory({
-      weatherStationId,
-      min: min ? Number(min) : undefined,
-      max: max ? Number(max) : undefined,
-      onlyAnomalies: onlyAnomalies === 'true',
-    });
+  async getHistory(@Query() query: GetHistoryQueryDto) {
+    return this.measurementService.getHistory(query);
   }
 }

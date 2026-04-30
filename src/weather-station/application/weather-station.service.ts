@@ -75,7 +75,14 @@ export class WeatherStationService {
     return storedWeatherStation;
   }
 
-  async delete(id: string): Promise<WeatherStation | null> {
-    return await this.weatherStationRepo.delete(id);
+  async delete(stationId: string): Promise<WeatherStation | null> {
+    const users = await this.userRepo.findBySubscribedStation(stationId)
+
+    for(const user of users){
+      user.unsubscribe(stationId)
+      await this.userRepo.update(user.id!, user);
+
+    }
+    return await this.weatherStationRepo.delete(stationId);
   }
 }

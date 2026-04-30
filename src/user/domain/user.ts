@@ -23,14 +23,16 @@ export class User {
   }
 
   unsubscribe(weatherStationId: string) {
-    const isSubscribed = this.subscriptionAlerts.includes(weatherStationId);
+    const isSubscribed = this.subscriptionAlerts.some(
+      (id) => id.toString() === weatherStationId,
+    );
 
     if (!isSubscribed) {
       throw new NotFoundException('Weather station is not subscribed');
     }
 
     this.subscriptionAlerts = this.subscriptionAlerts.filter(
-      (id) => id !== weatherStationId,
+      (id) => id.toString() !== weatherStationId,
     );
   }
 }
