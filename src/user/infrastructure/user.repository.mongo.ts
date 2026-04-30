@@ -5,6 +5,8 @@ import { Injectable } from '@nestjs/common';
 
 import { UserRepository } from '../../user/domain/user-repository';
 import { User } from '../domain/user';
+import { PersistedUser } from '../domain/user.types';
+import { Email } from '../domain/valueObjects/email';
 
 type UserDocument = HydratedDocument<{
   name: string;
@@ -24,30 +26,34 @@ export class UserRepositoryMongo implements UserRepository {
     return {
       name: user.name,
       surname: user.surname,
-      email: user.email,
-      subscriptionAlerts: user.subscriptionAlerts
+      email: user.email.value,
+      subscriptionAlerts: user.subscriptionAlerts,
     };
   }
 
-  async save(user: User): Promise<void> {
-    await this.model.create(this.toPersistence(user));
-  }
-
-  // doc es un documento de Mongoose
-
-  /* doc → infraestructura (Mongo)
-    User → dominio */
-  private toDomain(doc: UserDocument): User {
+  private toDomain(doc: UserDocument): PersistedUser {
     return new User(
-      doc._id.toString(),
       doc.name,
       doc.surname,
-      doc.email,
+      Email.create(doc.email),
       doc.subscriptionAlerts,
-    );
+      doc._id.toString(),
+    ) as PersistedUser;
   }
 
-  async findById(id: string): Promise<User | null> {
+  async create(user: User): Promise<PersistedUser> {
+    const doc = await this.model.create(this.toPersistence(user));
+
+    const entity = this.toDomain(doc);
+
+    if (!entity.id) {
+      throw new Error('Invariant: id should exist after persistence');
+    }
+
+    return entity as PersistedUser;
+  }
+
+  async findById(id: string): Promise<PersistedUser | null> {
     const userDoc = await this.model.findById(id);
 
     if (!userDoc) return null;
@@ -55,11 +61,27 @@ export class UserRepositoryMongo implements UserRepository {
     return this.toDomain(userDoc);
   }
 
-  async update(user: User): Promise<void> {
-    await this.model.updateOne({ _id: user.id }, this.toPersistence(user));
+  async update(id: string, user: User): Promise<User | null> {
+    const doc = await this.model.findByIdAndUpdate(
+      id,
+      this.toPersistence(user),
+      { new: true },
+    );
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
   }
 
-  async delete(id: string): Promise<User | null>{
+  async delete(id: string): Promise<User | null> {
     return this.model.findByIdAndDelete(id);
+  }
+
+  async findBySubscribedStation(stationId: string): Promise<User[]> {
+    const docs = await this.model.find({
+      subscriptionAlerts: stationId,
+    });
+
+    return docs.map((doc) => this.toDomain(doc));
   }
 }

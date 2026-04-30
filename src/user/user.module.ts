@@ -14,6 +14,7 @@ import { UserSchema } from './infrastructure/user.schema';
       ]),
     ],
   controllers: [UserController],
+  exports: [UserRepository],
   providers: [
       UserService,
       {

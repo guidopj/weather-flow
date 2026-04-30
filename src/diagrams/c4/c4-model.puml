@@ -1,0 +1,121 @@
+' ======================================================
+' C4 MODEL - WEATHER SYSTEM
+' ======================================================
+
+
+' =========================
+' C1 - CONTEXT
+' =========================
+@startuml C1_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "User", "Uses the system to view weather data and receive alerts")
+
+System(weatherSystem, "Weather Monitoring System", "Collects and processes weather measurements")
+
+System_Ext(stations, "Weather Stations", "External sensors sending data")
+
+Rel(user, weatherSystem, "Views data / receives alerts")
+Rel(stations, weatherSystem, "Sends measurements")
+
+@enduml
+
+
+' =========================
+' C2 - CONTAINERS
+' =========================
+@startuml C2_Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+
+System_Boundary(system, "Weather Monitoring System") {
+
+    Container(api, "NestJS API", "Node.js", "Main backend API")
+
+    Container(measurementModule, "Measurement Module", "NestJS Module", "Handles measurements and anomalies")
+    Container(userModule, "User Module", "NestJS Module", "Manages users and subscriptions")
+    Container(weatherModule, "Weather Station Module", "NestJS Module", "Manages stations")
+
+    ContainerDb(db, "MongoDB", "Database", "Stores users, stations, and measurements")
+}
+
+Rel(user, api, "Uses API")
+
+Rel(api, measurementModule, "Calls")
+Rel(api, userModule, "Calls")
+Rel(api, weatherModule, "Calls")
+
+Rel(measurementModule, db, "Reads/Writes")
+Rel(userModule, db, "Reads/Writes")
+Rel(weatherModule, db, "Reads/Writes")
+
+@enduml
+
+
+' =========================
+' C3 - COMPONENTS (Measurement Module)
+' =========================
+@startuml C3_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(m, "Measurement Module") {
+
+    Component(service, "MeasurementService", "Application Service")
+
+    Component(measurementRepo, "MeasurementRepository", "Interface")
+    Component(measurementRepoMongo, "MeasurementRepositoryMongo", "Mongo Implementation")
+
+    Component(wsRepo, "WeatherStationRepository", "Interface")
+    Component(wsRepoMongo, "WeatherStationRepositoryMongo", "Mongo Implementation")
+
+    Component(userRepo, "UserRepository", "Interface")
+    Component(userRepoMongo, "UserRepositoryMongo", "Mongo Implementation")
+
+    Component(notification, "NotificationService", "Application Service")
+}
+
+' =========================
+' Measurement flow
+' =========================
+Rel(service, measurementRepo, "uses")
+Rel(measurementRepo, measurementRepoMongo, "implemented by")
+
+' =========================
+' Weather Station validation
+' =========================
+Rel(service, wsRepo, "validates station exists")
+Rel(wsRepo, wsRepoMongo, "implemented by")
+
+' =========================
+' User + notifications
+' =========================
+Rel(service, userRepo, "fetches subscribed users")
+Rel(userRepo, userRepoMongo, "implemented by")
+
+Rel(service, notification, "sends alerts")
+
+@enduml
+
+' --- Measurement flow
+Rel(service, measurementRepo, "uses")
+Rel(measurementRepo, measurementRepoMongo, "implemented by")
+
+' --- Weather station dependency
+Rel(service, wsRepo, "validates station exists")
+Rel(wsRepo, wsRepoMongo, "implemented by")
+
+' --- External services
+Rel(service, userRepo, "fetches subscribers")
+Rel(service, notification, "sends alerts")
+
+@enduml
+
+Rel(service, repo, "uses")
+Rel(repo, repoMongo, "implemented by")
+
+Rel(service, wsRepo, "validates station")
+Rel(service, userRepo, "fetches subscribers")
+Rel(service, notification, "sends alerts")
+
+@enduml

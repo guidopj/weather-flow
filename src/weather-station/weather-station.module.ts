@@ -5,14 +5,17 @@ import { WeatherStationSchema } from './infrastructure/weather-station.schema';
 import { WeatherStationService } from './application/weather-station.service';
 import { WeatherStationRepository } from './domain/weather-station.repository';
 import { WeatherStationRepositoryMongo } from './infrastructure/weather-station.repository.mongo';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
         MongooseModule.forFeature([
-          { name: "Measurement", schema: WeatherStationSchema },
+          { name: "WeatherStation", schema: WeatherStationSchema },
         ]),
+        UserModule
       ],
   controllers: [WeatherStationController],
+  exports: [WeatherStationRepository],
   providers: [
         WeatherStationService,
         {

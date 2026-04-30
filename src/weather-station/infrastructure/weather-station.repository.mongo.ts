@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { WeatherStationRepository } from '../domain/weather-station.repository';
 import { WeatherStation } from '../domain/weatherStation';
 import { Location } from 'src/measurement/domain/valueObjects/Location';
+import { PersistedWeatherStation } from '../domain/weather-station.types';
 
 type WeatherStationDocument = HydratedDocument<{
   name: string;
@@ -22,9 +23,65 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     private readonly model: Model<WeatherStationDocument>,
   ) {}
 
+  async create(
+    weatherStation: WeatherStation,
+  ): Promise<PersistedWeatherStation> {
+    const doc = await this.model.create(this.toPersistence(weatherStation));
+
+    const station = this.toDomain(doc);
+
+    if (!station.id) {
+      throw new Error('ID should exist after persistence');
+    }
+
+    return station as PersistedWeatherStation;
+  }
+
+  async update(
+    weatherStationId: string,
+    weatherStation: WeatherStation,
+  ): Promise<WeatherStation | null> {
+    const doc = await this.model.findByIdAndUpdate(
+      weatherStationId,
+      this.toPersistence(weatherStation),
+      { new: true },
+    );
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
+  }
+
+  async delete(id: string): Promise<WeatherStation | null> {
+    const doc = await this.model.findByIdAndDelete(id);
+
+    if (!doc) return null;
+
+    return this.toDomain(doc);
+  }
+
+  async findByName(name: string) {
+    const normalizedName = this.normalizeName(name);
+
+    const doc = await this.model.findOne({
+      name: normalizedName,
+    });
+
+    if (!doc) return null;
+
+    return {
+      id: doc._id.toString(),
+      station: this.toDomain(doc),
+    };
+  }
+
+  private normalizeName(name: string): string {
+    return name.trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
   private toPersistence(weatherStation: WeatherStation) {
     return {
-      name: weatherStation.name,
+      name: this.normalizeName(weatherStation.name),
       location: weatherStation.location,
       sensorModel: weatherStation.sensorModel,
       state: weatherStation.state,
@@ -32,21 +89,14 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     };
   }
 
-  async save(weatherStation: WeatherStation): Promise<WeatherStation> {
-    const doc = await this.model.create(this.toPersistence(weatherStation));
-    return this.toDomain(doc);
-  }
-
-  /* doc → infraestructura (Mongo)
-    User → dominio */
   private toDomain(doc: WeatherStationDocument): WeatherStation {
     return new WeatherStation(
-      doc._id.toString(),
       doc.name,
       doc.location,
       doc.sensorModel,
       doc.state,
       doc.ownerId,
+      doc._id.toString(),
     );
   }
 
@@ -56,21 +106,5 @@ export class WeatherStationRepositoryMongo implements WeatherStationRepository {
     if (!userDoc) return null;
 
     return this.toDomain(userDoc);
-  }
-
-  async update(weatherStation: WeatherStation): Promise<WeatherStation | null> {
-  const doc = await this.model.findByIdAndUpdate(
-    weatherStation.id,
-    this.toPersistence(weatherStation),
-    { new: true }
-  );
-
-  if (!doc) return null;
-
-  return this.toDomain(doc);
-}
-
-  async delete(id: string): Promise<WeatherStation | null> {
-    return this.model.findByIdAndDelete(id);
   }
 }

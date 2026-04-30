@@ -1,82 +1,72 @@
-import { Injectable } from '@nestjs/common';
-
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { User } from '../domain/user';
 import { CreateUserDto } from '../create-user.dto';
 import { UpdateUserDto } from '../update-user.dto';
 import { UserRepository } from '../domain/user-repository';
+import { Email } from '../domain/valueObjects/email';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly repo: UserRepository) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
-  async createUser(input: CreateUserDto) {
-    // 1. crear entidad de dominio
-    const newUser = new User(
-      '',
-      input.name,
-      input.surname,
-      input.email,
-      input.subscriptionAlerts,
-    );
+  async create(input: CreateUserDto) {
+      const email = Email.create(input.email);
 
-    // 2. persistir usando puerto
-    await this.repo.save(newUser);
+    const newUser = new User(input.name, input.surname, email, []);
+
+    await this.userRepository.create(newUser);
 
     return newUser;
   }
 
-  async updateUser(id: string, input: UpdateUserDto) {
-    const user: User | null = await this.repo.findById(id);
-    if (!user) throw new Error('User not found');
+  async update(userId: string, input: UpdateUserDto) {
+    const user: User | null = await this.userRepository.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
 
-    // aplicar cambios (sin romper dominio)
     if (input.name) user.name = input.name;
     if (input.surname) user.surname = input.surname;
-    if (input.email) user.email = input.email;
+    if (input.email) user.email = Email.create(input.email);
     if (input.subscriptionAlerts)
       user.subscriptionAlerts = input.subscriptionAlerts;
 
-    await this.repo.update(user);
+    await this.userRepository.update(userId, user);
 
     return user;
   }
 
-  async deleteUser(id: string) {
-    await this.repo.delete(id)
+  async delete(id: string) {
+    await this.userRepository.delete(id);
   }
 
   async subscribe(userId: string, weatherStationId: string) {
-    const user: User | null = await this.repo.findById(userId);
-    if (!user) throw new Error('User not found');
-
-    const isSubscribed = user.subscriptionAlerts.includes(weatherStationId);
-
-    if (isSubscribed) {
-      throw new Error('Weather station is already subscribed');
-    }
+    const user: User | null = await this.userRepository.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
 
     user.subscribe(weatherStationId);
 
-
-    await this.repo.update(user);
+    await this.userRepository.update(userId, user);
 
     return user;
   }
 
   async unsubscribe(userId: string, weatherStationId: string) {
-    const user: User | null = await this.repo.findById(userId);
-    if (!user) throw new Error('User not found');
+    const user: User | null = await this.userRepository.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
 
     const isSubscribed = user.subscriptionAlerts.includes(weatherStationId);
 
     if (!isSubscribed) {
-      throw new Error('Weather station is not subscribed');
+      throw new NotFoundException('Weather station is not subscribed');
     }
 
     user.unsubscribe(weatherStationId);
 
-    await this.repo.update(user);
+    await this.userRepository.update(userId, user);
 
     return user;
   }

@@ -1,0 +1,39 @@
+@startuml
+
+actor WeatherStation
+
+participant MeasurementService
+participant WeatherStationRepository
+participant Measurement
+participant MeasurementRepository
+participant UserRepository
+participant NotificationService
+
+WeatherStation -> MeasurementService: create(input)
+
+MeasurementService -> WeatherStationRepository: findById(weatherStationId)
+
+alt station not found
+    WeatherStationRepository --> MeasurementService: null
+    MeasurementService --> WeatherStation: throw NotFoundException
+end
+
+WeatherStationRepository --> MeasurementService: station
+
+MeasurementService -> Measurement: create(input)
+Measurement --> MeasurementService: measurement
+
+MeasurementService -> MeasurementRepository: create(measurement)
+
+alt measurement.isAnomaly == true
+    MeasurementService -> UserRepository: findBySubscribedStation(weatherStationId)
+    UserRepository --> MeasurementService: users
+
+    loop for each user
+        MeasurementService -> NotificationService: notify(email, alert message)
+    end
+end
+
+MeasurementService --> WeatherStation: measurement created
+
+@enduml

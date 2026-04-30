@@ -1,6 +1,6 @@
-import { IsArray, IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { LocationDto } from 'src/dto/location.dto';
+import { LocationDto } from '../dto/location.dto';
 
 export class UpdateWeatherStationDto {
   @ApiPropertyOptional()

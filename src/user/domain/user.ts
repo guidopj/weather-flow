@@ -1,31 +1,38 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { Email } from './valueObjects/email';
+
 export class User {
   constructor(
-    public readonly id: string | null,
     public name: string,
     public surname: string,
-    public email: string,
+    public email: Email,
     //IDs de estaciones de las cuales desea recibir alertas
     public subscriptionAlerts: Array<string> = [],
+    public id?: string,
   ) {}
 
   subscribe(weatherStationId: string) {
-    const alreadySubscribed = this.subscriptionAlerts.includes(weatherStationId);
+    const alreadySubscribed =
+      this.subscriptionAlerts.includes(weatherStationId);
 
     if (alreadySubscribed) {
-      throw new Error('Weather station already subscribed');
+      throw new ConflictException('Weather station already subscribed');
     }
 
     this.subscriptionAlerts.push(weatherStationId);
   }
 
   unsubscribe(weatherStationId: string) {
-    const isSubscribed = this.subscriptionAlerts.includes(weatherStationId);
+    const isSubscribed = this.subscriptionAlerts.some(
+      (id) => id.toString() === weatherStationId,
+    );
 
     if (!isSubscribed) {
-      throw new Error('Weather station is not subscribed');
+      throw new NotFoundException('Weather station is not subscribed');
     }
 
-    this.subscriptionAlerts =
-      this.subscriptionAlerts.filter(id => id !== weatherStationId);
+    this.subscriptionAlerts = this.subscriptionAlerts.filter(
+      (id) => id.toString() !== weatherStationId,
+    );
   }
 }
