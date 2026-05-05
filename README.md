@@ -18,6 +18,10 @@ $ npm run test
 # test coverage
 $ npm run test:cov
 ```
+## Diagrama de clases
+
+<img width="499" height="341" alt="image" src="https://github.com/user-attachments/assets/b604fb65-200f-4ed2-ab1b-f4afff6f976b" />
+
 
 ## Create Measurement
 
@@ -65,3 +69,7 @@ $ npm run test:cov
 ### C3 - Measurement Component
 
 <img width="1011" height="471" alt="C3_Components" src="https://github.com/user-attachments/assets/18986bef-41f3-495d-b6a4-f7fd107406ed" />
+
+### video
+
+[Ver demo en Loom](https://www.loom.com/share/166f123fc6494e2696b54f4f4cd56a0d)
