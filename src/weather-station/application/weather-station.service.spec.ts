@@ -18,6 +18,7 @@ describe('WeatherStationService', () => {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    findBySubscribedStation: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -158,6 +159,7 @@ describe('WeatherStationService', () => {
   describe('delete', () => {
     it('should call repository delete', async () => {
       weatherStationMockRepo.delete.mockResolvedValue({ id: 'ws1' });
+      userMockRepo.findBySubscribedStation.mockResolvedValue([]);
 
       const result = await service.delete('ws1');
 

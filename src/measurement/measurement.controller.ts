@@ -12,7 +12,7 @@ import { MeasurementService } from './application/measurement.service';
 import { FilterQueryDto } from '../dto/filterQuery.dto';
 import { CreateMeasurementDto } from './createMeasurement.dto';
 import { UpdateMeasurementDto } from './update-measurement.dto';
-import { GetHistoryQueryDto } from 'src/dto/getHistoryQuery.dto';
+import { GetHistoryQueryDto } from '../dto/getHistoryQuery.dto';
 
 @Controller('measurements')
 export class MeasurementController {
