@@ -1,3 +1,5 @@
+[![CI](https://github.com/guidopj/weather-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/guidopj/weather-flow/actions/workflows/ci.yml)
+
 ```bash
 $ npm install
 ```
