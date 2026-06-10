@@ -10,6 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Call OpenWeather API
-        run: |
-          curl "https://api.openweathermap.org/data/2.5/weather?lat=-34.6037&lon=-58.3816&appid=${{ secrets.OPENWEATHER_API_KEY }}"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - name: Run script
+        run: node scripts/fetch-weather.js
+        env:
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
