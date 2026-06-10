@@ -1,0 +1,15 @@
+name: Fetch Weather
+
+on:
+  schedule:
+    - cron: '0 */5 * * *' # cada 5 horas
+  workflow_dispatch:
+
+jobs:
+  fetch-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call OpenWeather API
+        run: |
+          curl "https://api.openweathermap.org/data/2.5/weather?q=Buenos Aires&appid=${{ secrets.OPENWEATHER_API_KEY }}"
