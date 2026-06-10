@@ -7,44 +7,51 @@ async function run() {
   const client = new MongoClient(MONGO_URI)
   await client.connect()
 
-  const db = client.db("weather-flow-db")
-  const collection = db.collection("weatherstations")
+  // DB donde están las estaciones
+  const stationsDb = client.db("weather-flow-db")
+  const stationsCollection = stationsDb.collection("weatherstations")
 
-  const stations = await collection.find({}).toArray()
+  // DB donde guardás observaciones
+  const weatherDb = client.db("weather")
+  const observationsCollection = weatherDb.collection("observations")
+
+  const stations = await stationsCollection.find({}).toArray()
 
   console.log(`Stations found: ${stations.length}`)
 
   for (const station of stations) {
-    const { latitude, longitude } = station.location || {}
+    const lat = station?.location?.latitude
+    const lon = station?.location?.longitude
 
-    if (!latitude || !longitude) {
-      console.log("Skipping station (no coords)", station._id)
+    if (!lat || !lon) {
+      console.log("Skipping station (missing coords)", station._id)
       continue
     }
 
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${OPENWEATHER_API_KEY}`
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OPENWEATHER_API_KEY}`
 
     try {
       const res = await fetch(url)
       const data = await res.json()
 
       if (data.cod !== 200) {
-        console.log("API error for station", station._id, data)
+        console.log("OpenWeather error:", station._id, data)
         continue
       }
 
       console.log("Weather OK:", station._id, data.main.temp)
 
-      // opcional: guardar por estación
-      await collection.updateOne(
-        { _id: station._id },
-        {
-          $set: {
-            lastWeather: data,
-            updatedAt: new Date(),
-          },
-        }
-      )
+      await observationsCollection.insertOne({
+        stationId: station._id,
+        location: station.location,
+        weather: data.weather,
+        main: data.main,
+        temp: data.main?.temp,
+        humidity: data.main?.humidity,
+        wind: data.wind,
+        createdAt: new Date(),
+        source: "openweathermap"
+      })
 
     } catch (err) {
       console.error("Error station:", station._id, err)
